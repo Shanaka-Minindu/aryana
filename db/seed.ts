@@ -1,84 +1,72 @@
+import 'dotenv/config';
 import { Role, OrderStatus } from "../lib/generated/prisma";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 
+
 async function main() {
-  const hashedPassword = await bcrypt.hash("password123", 10);
+  const hashedPassword = await bcrypt.hash("123", 10);
 
   // 1. SEED USERS
   console.log("Seeding users...");
-  const users = await Promise.all(
-    Array.from({ length: 10 }).map((_, i) =>
-      prisma.user.upsert({
-        where: { email: `user${i}@example.com` },
-        update: {},
-        create: {
-          email: `user${i}@example.com`,
-          name: `User ${i}`,
-          password: hashedPassword,
-          role: i === 0 ? Role.ADMIN : Role.USER,
-          addresses: {
-            create: {
-              fullName: `User ${i} Address`,
-              phone: "1234567890",
-              addressLine1: `${i} Main St`,
-              city: "Colombo",
-              district: "Western",
-              country: "Sri Lanka",
-              isDefault: true,
-            },
+const users = [];
+  for (let i = 1; i <= 10; i++) {
+    const user = await prisma.user.upsert({
+      where: { email: `user${i}@example.com` },
+      update: {},
+      create: {
+        email: `user${i}@example.com`,
+        name: `User ${i}`,
+        password: hashedPassword, // In real apps, use bcrypt
+        role: i === 1 ? Role.ADMIN : Role.USER,
+        addresses: {
+          create: {
+            fullName: `User ${i} FullName`,
+            phone: `+123456789${i}`,
+            addressLine1: `${i}0${i} Main St`,
+            city: 'Sample City',
+            district: 'Central',
+            country: 'Countryland',
+            isDefault: true,
           },
         },
-      }),
-    ),
-  );
+      },
+    });
+    users.push(user);
+  }
 
-  // 2. SEED CATEGORIES (Recursive)
-  console.log("Seeding categories...");
-  const rootCategory = await prisma.category.upsert({
-    where: { slug: "mens-clothing" },
-    update: {},
-    create: {
-      name: "Men's Clothing",
-      slug: "mens-clothing",
-      imageUrl: "https://via.placeholder.com/300",
-    },
-  });
+  // 3. CATEGORIES (10 records)
+  const categories = [];
+  for (let i = 1; i <= 10; i++) {
+    const category = await prisma.category.create({
+      data: {
+        name: `Category ${i}`,
+        slug: `category-${i}`,
+        imageUrl: `https://picsum.photos/seed/cat${i}/200`,
+      },
+    });
+    categories.push(category);
+  }
 
-  const subCategories = await Promise.all(
-    ["T-Shirts", "Jeans", "Jackets", "Shoes"].map((name) =>
-      prisma.category.upsert({
-        where: { slug: name.toLowerCase().replace(" ", "-") },
-        update: {},
-        create: {
-          name,
-          slug: name.toLowerCase().replace(" ", "-"),
-          parentId: rootCategory.id,
-        },
-      }),
-    ),
-  );
-
-  // 3. SEED PRODUCTS & VARIANTS
-  console.log("Seeding products...");
+  // 4. PRODUCTS & VARIANTS (10 Products, each with 2 variants)
   const products = [];
   for (let i = 1; i <= 10; i++) {
     const product = await prisma.product.create({
       data: {
         name: `Product ${i}`,
-        description: `High-quality material clothing item ${i}`,
-        price: 29.99 + i,
-        categoryId: subCategories[i % subCategories.length].id,
+        description: `This is the amazing description for product ${i}`,
+        price: 19.99 * i,
+        categoryId: categories[i - 1].id,
         images: {
           create: [
-            { url: "https://via.placeholder.com/600", isPrimary: true },
-            { url: "https://via.placeholder.com/600" },
+            { url: `https://picsum.photos/seed/prod${i}a/400`, isPrimary: true },
+            { url: `https://picsum.photos/seed/prod${i}b/400` },
           ],
         },
         variants: {
           create: [
-            { size: "M", color: "Blue", stock: 10 },
-            { size: "L", color: "Black", stock: 5 },
+            { size: 'M', color: 'Blue', stock: 50 },
+            { size: 'L', color: 'Red', stock: 30 },
           ],
         },
       },
@@ -87,71 +75,97 @@ async function main() {
     products.push(product);
   }
 
-  // 4. SEED CARTS & ORDERS
-  console.log("Seeding transactional data...");
-  for (let i = 0; i < 5; i++) {
-    const user = users[i];
-    const variant = products[i].variants[0];
-
-    // Create Cart
-    await prisma.cart.create({
+  // 5. CAROUSELS (2 Carousels with 5 items each = 10 items)
+  for (let i = 1; i <= 2; i++) {
+    await prisma.carousel.create({
       data: {
-        userId: user.id,
+        name: `Homepage Hero ${i}`,
+        position: i,
         items: {
-          create: { variantId: variant.id, quantity: 1 },
+          create: [1, 2, 3, 4, 5].map((pos) => ({
+            heading: `Slide ${pos} for Carousel ${i}`,
+            subHeading: 'Limited time offer!',
+            imageUrl: `https://picsum.photos/seed/slide${i}${pos}/1200/400`,
+            textPosition: "CENTER",
+            position: pos,
+          })),
         },
       },
     });
+  }
 
-    // Create Order
+  // 6. ORDERS (10 records)
+  for (let i = 1; i <= 10; i++) {
+    const user = users[i - 1];
+    const product = products[i - 1];
+    
     await prisma.order.create({
       data: {
         userId: user.id,
-        totalAmount: products[i].price,
         status: OrderStatus.PAID,
+        totalAmount: product.price * 2,
         items: {
           create: {
-            variantId: variant.id,
-            quantity: 1,
-            price: products[i].price,
+            variantId: product.variants[0].id,
+            quantity: 2,
+            price: product.price,
           },
         },
         delivery: {
           create: {
-            fullName: user.name || "Customer",
-            phone: "123456789",
-            addressLine1: "123 Order St",
-            city: "Colombo",
-            district: "Western",
-            country: "Sri Lanka",
+            fullName: user.name || 'Guest',
+            phone: '555-0199',
+            addressLine1: '123 Order St',
+            city: 'Order City',
+            district: 'Shipping Dist',
+            country: 'Countryland',
           },
         },
       },
     });
   }
 
-  // 5. SEED CAROUSEL
-  console.log("Seeding carousel...");
-  await prisma.carousel.upsert({
-    where: { position: 1 },
-    update: {},
-    create: {
-      name: "Homepage Main",
-      position: 1,
-      items: {
-        create: Array.from({ length: 3 }).map((_, i) => ({
-          imageUrl: "https://via.placeholder.com/1200x400",
-          heading: `Sale ${i + 1}`,
-          subHeading: "Get 50% off today!",
-          linkUrl: "/shop",
-          buttonText: "Shop Now",
-          position: i,
-        })),
+  // 7. CONVERSATIONS & MESSAGES (10 records)
+  for (let i = 1; i <= 10; i++) {
+    await prisma.conversation.create({
+      data: {
+        userId: users[i - 1].id,
+        messages: {
+          create: [
+            { content: 'Hello, I have a question about my order.', senderId: users[i - 1].id },
+            { content: 'Sure, how can we help?', senderId: users[0].id }, // First user is Admin
+          ],
+        },
       },
-    },
-  });
+    });
+  }
 
-  console.log("Seeding completed successfully!");
+  for (let i = 1; i <= 10; i++) {
+    // We'll pick a category and a product to link
+    const category = categories[i - 1];
+    const product = products[i - 1];
+
+    await prisma.displayItem.create({
+      data: {
+        title: `Featured Section ${i}`,
+        slug: `featured-section-${i}`,
+        categoryId: category.id,
+        position: i, // Unique constraint on position
+        isActive: true,
+        // Link the product via the junction table
+        items: {
+          create: {
+            productId: product.id,
+            position: 1, // First product in this display section
+          }
+        }
+      },
+    });
+  }
+
+  console.log('✅ Display items seeded.');
+
+  console.log('✅ Seeding finished.');
 }
 
 main()

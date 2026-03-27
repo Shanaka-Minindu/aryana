@@ -5,7 +5,7 @@ export default auth((req) => {
   const { nextUrl } = req;
 
   const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
-  const isPublicRoute = ["/", "/shop", "/sign-in", "/register"].includes(nextUrl.pathname);
+  const isPublicRoute = ["/", "/store", "/sign-in", "/category"].includes(nextUrl.pathname);
   const isAdminRoute = nextUrl.pathname.startsWith("/admin");
 
   // 1. Allow all API Auth routes

@@ -27,6 +27,11 @@ enum OrderStatus {
   FAILED
 }
 
+enum TextPosition {
+  LEFT
+  RIGHT
+  CENTER
+}
 // --- AUTH & USER ---
 
 model User {
@@ -86,6 +91,8 @@ model Category {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  displayItems DisplayItem[]
 }
 
 model Product {
@@ -103,6 +110,8 @@ model Product {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  displayItemProducts DisplayItemProduct[] // ✅ fixed relation
 
   @@index([categoryId])
 }
@@ -268,7 +277,7 @@ model CarouselItem {
   id         String   @id @default(uuid())
   carouselId String
   carousel   Carousel @relation(fields: [carouselId], references: [id], onDelete: Cascade)
-
+  textPosition TextPosition
   imageUrl   String
   heading    String?
   subHeading String?
@@ -282,4 +291,42 @@ model CarouselItem {
 
   @@unique([carouselId, position])
   @@index([carouselId])
+}
+
+model DisplayItem {
+  id    String @id @default(uuid())
+  title String
+  slug  String @unique
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  position Int
+  isActive Boolean @default(true)
+
+  items DisplayItemProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@unique([position])
+}
+
+model DisplayItemProduct {
+  id String @id @default(uuid())
+
+  displayItemId String
+  displayItem   DisplayItem @relation(fields: [displayItemId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  position Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([displayItemId, productId])
+  @@unique([displayItemId, position])
+  @@index([productId])
 }
