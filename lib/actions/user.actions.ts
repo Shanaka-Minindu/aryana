@@ -18,6 +18,7 @@ export async function signInWithCredentials(
     email,
     password,
   });
+  console.log(validatedFields)
 
   // 3. Return early if validation fails
   if (!validatedFields.success) {

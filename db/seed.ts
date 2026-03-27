@@ -1,8 +1,6 @@
-import {Role, OrderStatus } from "../lib/generated/prisma";
+import { Role, OrderStatus } from "../lib/generated/prisma";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
-
-
 
 async function main() {
   const hashedPassword = await bcrypt.hash("password123", 10);
@@ -31,8 +29,8 @@ async function main() {
             },
           },
         },
-      })
-    )
+      }),
+    ),
   );
 
   // 2. SEED CATEGORIES (Recursive)
@@ -57,8 +55,8 @@ async function main() {
           slug: name.toLowerCase().replace(" ", "-"),
           parentId: rootCategory.id,
         },
-      })
-    )
+      }),
+    ),
   );
 
   // 3. SEED PRODUCTS & VARIANTS

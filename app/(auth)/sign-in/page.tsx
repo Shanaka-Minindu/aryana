@@ -16,15 +16,15 @@ const SignInPage = async (props: {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <Card className="flex w-full max-w-4xl overflow-hidden rounded-2xl  border-none shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 ">
+      <Card className="flex flex-row w-full max-w-4xl overflow-hidden rounded-2xl  border-none shadow-xl py-0">
         {/* Left Side: Decorative Image */}
-        <div className="relative hidden w-1/2 md:block min-h-[500px]">
+        <div className="relative hidden w-1/2 md:block min-h-[650px]">
           <Image
             src="https://images.pexels.com/photos/14848573/pexels-photo-14848573.jpeg"
             alt="Clothing Store Aesthetic"
             fill
-            className="object-cover"
+            className="object-cover overflow-hidden"
             priority
             sizes="50vw"
           />

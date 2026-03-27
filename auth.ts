@@ -3,9 +3,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./db/prisma";
-import type { Adapter } from "@auth/core/adapters";
 import { Role } from "./lib/generated/prisma";
-import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
@@ -22,8 +20,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email: { type: "email" },
+        password: { type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
@@ -38,6 +36,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.password as string,
           user.password,
         );
+        console.log(isPasswordCorrect);
 
         if (!isPasswordCorrect) return null;
 
