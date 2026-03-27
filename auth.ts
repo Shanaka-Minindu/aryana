@@ -3,7 +3,8 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./db/prisma";
-import { Role } from "./lib/generated/prisma";
+import { Role } from "@prisma/client";
+
 
 
 
