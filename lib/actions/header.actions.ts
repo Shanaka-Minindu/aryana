@@ -9,7 +9,7 @@ export interface HeaderItem {
   slug: string;
   parentId?: string | null;
   // This allows the infinite nesting for your dropdowns/menus
-  children: HeaderItem[];
+  children?: HeaderItem[];
 }
 
 export async function getHeaderItems(): Promise<
@@ -34,7 +34,7 @@ export async function getHeaderItems(): Promise<
 
     return {
       success: true,
-      data: categories as HeaderItem[],
+      data: (categories as unknown) as HeaderItem[],
     };
   } catch (error) {
     console.error("[GET_HEADER_ITEMS]", error);
