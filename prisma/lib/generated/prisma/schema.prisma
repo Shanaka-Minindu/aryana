@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- ENUMS ---
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+// --- AUTH & USER ---
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  name     String?
+  role     Role    @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  cart          Cart? // One active cart per user
+  orders        Order[]
+  conversations Conversation[]
+  messages      Message[]
+  addresses     UserAddress[]
+}
+
+model UserAddress {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName     String
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  district     String
+  postalCode   String?
+  country      String
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// --- CATALOG ---
+
+model Category {
+  id       String  @id @default(uuid())
+  name     String
+  slug     String  @unique
+  imageUrl String?
+
+  // Self-referencing relationship for recursive tree
+  parentId String?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  isActive    Boolean @default(true)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  images   ProductImage[]
+  variants ProductVariant[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  url       String
+  isPrimary Boolean @default(false)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  size  String
+  color String
+  stock Int
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@unique([productId, size, color]) // Prevents duplicate variant logic
+  @@index([productId])
+}
+
+// --- SHOPPING CART ---
+
+model Cart {
+  id String @id @default(uuid())
+
+  // Optional userId supports the Guest -> Auth transition
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model CartItem {
+  id     String @id @default(uuid())
+  cartId String
+  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+  quantity Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, variantId]) // Prevents duplicate rows for the same variant in a cart
+}
+
+// --- ORDERS & PAYMENTS ---
+
+model Order {
+  id     String  @id @default(uuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  stripeSessionId String?     @unique
+
+  items    OrderItem[]
+  delivery DeliveryInfo?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model OrderItem {
+  id      String @id @default(uuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+  quantity Int
+  price    Float // Snapshot of price at time of purchase
+
+  @@index([orderId])
+}
+
+model DeliveryInfo {
+  id      String @id @default(uuid())
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  fullName     String
+  phone        String
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  district     String
+  postalCode   String?
+  country      String
+
+  createdAt DateTime @default(now())
+}
+
+// --- CHAT SYSTEM ---
+
+model Conversation {
+  id String @id @default(uuid())
+
+  // Linked to user for easy support history retrieval
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  messages Message[]
+  isOpen   Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String?
+  sender   User?   @relation(fields: [senderId], references: [id])
+
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+}
+
+// --- CMS & DYNAMIC CONTENT ---
+
+model Carousel {
+  id       String @id @default(uuid())
+  name     String
+  position Int    @unique // order of carousels on the homepage
+
+  isActive Boolean        @default(true)
+  items    CarouselItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CarouselItem {
+  id         String   @id @default(uuid())
+  carouselId String
+  carousel   Carousel @relation(fields: [carouselId], references: [id], onDelete: Cascade)
+
+  imageUrl   String
+  heading    String?
+  subHeading String?
+  linkUrl    String?
+  buttonText String?
+
+  position Int
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  @@unique([carouselId, position])
+  @@index([carouselId])
+}
