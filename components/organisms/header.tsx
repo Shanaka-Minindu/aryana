@@ -22,7 +22,7 @@ const Header = () => {
       const response = await getHeaderItems();
       if (response.success && response.data) {
         // Limit to main 5 items as per requirement
-        setNavItems(response.data.slice(0, 5));
+        setNavItems(response.data.slice(0, 4));
       }
     };
     fetchNav();
@@ -83,15 +83,14 @@ const Header = () => {
                       </NavigationMenuContent>
                     </>
                   ) : (
-                    <Link
-                      href={`/category/${item.slug}`}
-                      legacyBehavior
-                      passHref
-                    >
-                      <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium uppercase tracking-wide text-slate-600 transition-colors hover:text-slate-900">
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href={`/category/${item.slug}`}
+                        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium uppercase tracking-wide text-slate-600 transition-colors hover:text-slate-900"
+                      >
                         {item.name}
-                      </NavigationMenuLink>
-                    </Link>
+                      </Link>
+                    </NavigationMenuLink>
                   )}
                 </NavigationMenuItem>
               ))}

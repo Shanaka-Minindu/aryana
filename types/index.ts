@@ -1,3 +1,5 @@
+import { ProductImage } from "@/lib/generated/prisma";
+
 export type FieldErrors = Record<string, string[] | undefined>;
 
 export interface ServerActionResponse<T> {
@@ -9,14 +11,36 @@ export interface ServerActionResponse<T> {
   fieldErrors?: FieldErrors;
 }
 
-
 export interface carouselItem {
   id: string;
   imgUrl: string;
   heading: string;
   subHeading: string;
   linkUrl: string;
-  textPosition: "LEFT"|"RIGHT"|"CENTER"
+  textPosition: "LEFT" | "RIGHT" | "CENTER";
   buttonText: string;
   position: number;
+}
+
+export interface selectedProduct {
+  id: string;
+  name: string;
+  price: number;
+  isActive: boolean;
+  isSale: boolean;
+  categorySlug:string;
+  slug: string;
+  salePrice?: number;
+  colors: string[];
+  images: ProductImage[];
+}
+
+export interface DisplayItemsProps {
+  id: string;
+  title: string;
+  categorySlug: string;
+  categoryId: string;
+  position: number;
+  isActive: boolean;
+  products: selectedProduct[];
 }

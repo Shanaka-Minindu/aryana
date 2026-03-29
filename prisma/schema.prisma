@@ -32,6 +32,7 @@ enum TextPosition {
   RIGHT
   CENTER
 }
+
 // --- AUTH & USER ---
 
 model User {
@@ -96,14 +97,16 @@ model Category {
 }
 
 model Product {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   description String
   price       Float
-  isActive    Boolean @default(true)
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
+  isActive    Boolean  @default(true)
+  isSale      Boolean  @default(false)
+  salePrice   Float?
+  slug        String   @unique
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
 
   images   ProductImage[]
   variants ProductVariant[]
@@ -274,15 +277,15 @@ model Carousel {
 }
 
 model CarouselItem {
-  id         String   @id @default(uuid())
-  carouselId String
-  carousel   Carousel @relation(fields: [carouselId], references: [id], onDelete: Cascade)
+  id           String       @id @default(uuid())
+  carouselId   String
+  carousel     Carousel     @relation(fields: [carouselId], references: [id], onDelete: Cascade)
   textPosition TextPosition
-  imageUrl   String
-  heading    String?
-  subHeading String?
-  linkUrl    String?
-  buttonText String?
+  imageUrl     String
+  heading      String?
+  subHeading   String?
+  linkUrl      String?
+  buttonText   String?
 
   position Int
   isActive Boolean @default(true)
@@ -309,8 +312,8 @@ model DisplayItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([categoryId])
   @@unique([position])
+  @@index([categoryId])
 }
 
 model DisplayItemProduct {

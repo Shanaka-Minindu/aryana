@@ -56,8 +56,8 @@ export async function leftDrawer(): Promise<ServerActionResponse<leftDrawerPros[
     // Fetch categories where parentId is NOT null
     const categories = await prisma.category.findMany({
       where: {
-        parentId: {
-          not: null,
+        parentId:{
+          not:null
         },
       },
       select: {
