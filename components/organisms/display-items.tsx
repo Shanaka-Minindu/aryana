@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { DisplayItemsProps } from '@/types';
 import Product from '../molecules/product';
 import { Button } from '@/components/ui/button';
@@ -17,14 +17,15 @@ const DisplayItems = ({ displayItems }: displayItemsProp) => {
   
   const [startIndex, setStartIndex] = useState(0);
   const [itemsToShow, setItemsToShow] = useState(4);
-  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setItemsToShow(2);
+      if (window.innerWidth < 640) {
+        setItemsToShow(1); // Mobile: 1 item
+      } else if (window.innerWidth < 1024) {
+        setItemsToShow(2); // Tablet: 2 items
       } else {
-        setItemsToShow(4);
+        setItemsToShow(4); // Desktop: 4 items
       }
     };
     handleResize();
@@ -33,20 +34,17 @@ const DisplayItems = ({ displayItems }: displayItemsProp) => {
   }, []);
 
   const nextSlide = () => {
+    // Slide by 1 item at a time
     if (startIndex + itemsToShow < products.length) {
-      setDirection(1);
       setStartIndex((prev) => prev + 1);
     }
   };
 
   const prevSlide = () => {
     if (startIndex > 0) {
-      setDirection(-1);
       setStartIndex((prev) => prev - 1);
     }
   };
-
-  const visibleProducts = products.slice(startIndex, startIndex + itemsToShow);
 
   return (
     <section className="w-full py-12 px-4 md:px-8 lg:px-12 bg-white overflow-hidden">
@@ -59,43 +57,37 @@ const DisplayItems = ({ displayItems }: displayItemsProp) => {
           <button 
             onClick={prevSlide}
             disabled={startIndex === 0}
-            className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-30"
+            className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
           >
-            <ChevronLeft className="h-4 w-4 text-slate-600" />
+            <ChevronLeft className="h-5 w-5 text-slate-600" />
           </button>
           <button 
             onClick={nextSlide}
             disabled={startIndex + itemsToShow >= products.length}
-            className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-30"
+            className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
           >
-            <ChevronRight className="h-4 w-4 text-slate-600" />
+            <ChevronRight className="h-5 w-5 text-slate-600" />
           </button>
         </div>
       </div>
 
-      {/* Grid with Framer Motion Layout animations */}
-      <div className={`grid gap-6 md:gap-8 ${
-        itemsToShow === 2 ? "grid-cols-2" : "grid-cols-4"
-      }`}>
-        <AnimatePresence initial={false} mode="popLayout">
-          {visibleProducts.map((product) => (
-            <motion.div
-              key={product.id}
-              layout // Smoothly re-positions remaining items
-              initial={{ opacity: 0, x: direction * 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -direction * 50 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 30,
-                opacity: { duration: 0.2 } 
-              }}
+      {/* Sliding Track Container */}
+      <div className="relative">
+        <motion.div 
+          className="flex gap-6 md:gap-8"
+          initial={false}
+          animate={{ x: `calc(-${startIndex * (100 / itemsToShow)}% - ${startIndex * (32 / itemsToShow)}px)` }}
+          transition={{ type: "spring", stiffness: 200, damping: 25 }} // Smooth glide
+        >
+          {products.map((product) => (
+            <div 
+              key={product.id} 
+              style={{ flex: `0 0 calc(${100 / itemsToShow}% - ${( (itemsToShow - 1) * 32) / itemsToShow}px)` }}
             >
-              <Product product={product} />
-            </motion.div>
+              <Product product = {product} />
+            </div>
           ))}
-        </AnimatePresence>
+        </motion.div>
       </div>
 
       <div className="mt-12 flex justify-center">

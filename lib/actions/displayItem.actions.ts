@@ -6,7 +6,7 @@ import {
   selectedProduct,
   ServerActionResponse,
 } from "@/types";
-import { ProductImage } from "../generated/prisma";
+import { Product, ProductImage } from "../generated/prisma";
 
 export async function getDisplayItems(
   position: number,)
@@ -109,3 +109,6 @@ export async function getDisplayItems(
     };
   }
 }
+
+
+

@@ -1,4 +1,10 @@
-import { ProductImage } from "@/lib/generated/prisma";
+import {
+  Category,
+  Prisma,
+  Product,
+  ProductImage,
+  ProductVariant,
+} from "@/lib/generated/prisma";
 
 export type FieldErrors = Record<string, string[] | undefined>;
 
@@ -28,7 +34,7 @@ export interface selectedProduct {
   price: number;
   isActive: boolean;
   isSale: boolean;
-  categorySlug:string;
+  categorySlug: string;
   slug: string;
   salePrice?: number;
   colors: string[];
@@ -44,3 +50,24 @@ export interface DisplayItemsProps {
   isActive: boolean;
   products: selectedProduct[];
 }
+
+export interface getCategoryHomeData {
+  name: string;
+  slug: string;
+  imageUrl: string;
+}
+
+export type ProductWithRelations = Prisma.ProductGetPayload<{
+  include:{
+    variants:true;
+    images:true;
+    category:{
+      select:{
+        name:true;
+        slug:true
+      }
+    }
+  }
+}>
+
+

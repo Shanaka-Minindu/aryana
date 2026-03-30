@@ -58,7 +58,7 @@ const Header = () => {
                           {item.children.map((child) => (
                             <li key={child.id} className="space-y-3">
                               <Link
-                                href={`/category/${child.slug}`}
+                                href={`/shop/${child.slug}`}
                                 className="block text-sm font-bold text-slate-900 hover:underline"
                               >
                                 {child.name}
@@ -68,7 +68,7 @@ const Header = () => {
                                   {child.children.map((grandChild) => (
                                     <li key={grandChild.id}>
                                       <Link
-                                        href={`/category/${grandChild.slug}`}
+                                        href={`/shop/${grandChild.slug}`}
                                         className="text-sm text-slate-500 hover:text-slate-900 transition-colors"
                                       >
                                         {grandChild.name}
