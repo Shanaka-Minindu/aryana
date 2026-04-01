@@ -7,7 +7,7 @@ import { motion, useScroll, useSpring } from 'framer-motion';
 import { DisplayItemsProps, selectedProduct } from '@/types';
 import Product from '../molecules/product';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+
 
 interface displayItemsProp {
   displayItems: {

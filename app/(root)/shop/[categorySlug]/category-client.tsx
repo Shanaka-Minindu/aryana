@@ -93,7 +93,7 @@ const CategoryClient = ({
         </div>
       </div>
 
-      <div className="flex gap-8">
+      <div className="flex">
         <FilterBox
           filterData={filterData}
           isOpen={isOpen}
