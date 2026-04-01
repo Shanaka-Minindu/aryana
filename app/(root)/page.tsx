@@ -11,6 +11,9 @@ const HomePage = async () => {
   const carousel = await getCarousel(1);
   const carouselItems = carousel.success && carousel.data ? carousel.data : [];
 
+  const carousel2 = await getCarousel(2);
+  const carouselItems2 = carousel.success && carousel.data ? carousel.data : [];
+
   const displayIt1 = await getDisplayItems(1);
   const displayItem =
     displayIt1.success && displayIt1.data ? displayIt1.data : null;
@@ -30,6 +33,8 @@ const HomePage = async () => {
       {displayItem && <DisplayItems displayItems={displayItem} />}
       {categoryBoxData && <CategoryBox categoryBox={categoryBoxData} />}
       {displayItem && <DisplayItems displayItems={displayItem} />}
+       {displayItem && <DisplayItems displayItems={displayItem} />}
+      
     </div>
   );
 };

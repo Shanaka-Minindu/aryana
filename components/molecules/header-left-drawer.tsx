@@ -75,7 +75,7 @@ const HeaderLeftDrawer = () => {
                 >
                   <DrawerClose asChild>
                     <Link
-                      href={`/store/${category.slug}`}
+                      href={`/shop/${category.slug}`}
                       className="block py-4 text-[16px] font-bold tracking-tight hover:text-zinc-400 transition-colors uppercase"
                     >
                       {category.name}

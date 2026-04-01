@@ -9,7 +9,7 @@ export const loginSchema = z.object({
 export const AddToCartSchema = z.object({
   color: z
     .string({
-      error: "Color is required",
+      error: "Select a color",
     })
     .min(1, { message: "Please select a color" }),
     

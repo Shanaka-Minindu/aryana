@@ -6,7 +6,7 @@ import {
   selectedProduct,
   ServerActionResponse,
 } from "@/types";
-import { Product, ProductImage } from "../generated/prisma";
+import { ProductImage } from "../generated/prisma";
 
 export async function getDisplayItems(
   position: number,)

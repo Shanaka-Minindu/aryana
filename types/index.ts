@@ -1,10 +1,4 @@
-import {
-  Category,
-  Prisma,
-  Product,
-  ProductImage,
-  ProductVariant,
-} from "@/lib/generated/prisma";
+import { Prisma, ProductImage } from "@/lib/generated/prisma";
 
 export type FieldErrors = Record<string, string[] | undefined>;
 
@@ -36,7 +30,7 @@ export interface selectedProduct {
   isSale: boolean;
   categorySlug: string;
   slug: string;
-  salePrice?: number;
+  salePrice?: number | null;
   colors: string[];
   images: ProductImage[];
 }
@@ -58,16 +52,33 @@ export interface getCategoryHomeData {
 }
 
 export type ProductWithRelations = Prisma.ProductGetPayload<{
-  include:{
-    variants:true;
-    images:true;
-    category:{
-      select:{
-        name:true;
-        slug:true
-      }
-    }
-  }
-}>
+  include: {
+    variants: true;
+    images: true;
+    category: {
+      select: {
+        name: true;
+        slug: true;
+      };
+    };
+  };
+}>;
+
+export interface getFilterDataRes {
+  sizes: string[];
+  colors: string[];
+  inStock: number;
+  outOfStock: number;
+  lowPrice: number;
+  highPrice: number;
+}
 
 
+
+export interface filterType{
+    size: string[];
+    inStock: string[];
+    color: string[];
+    minPrice: string | null;
+    maxPrice: string | null;
+  };
