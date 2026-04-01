@@ -1,105 +1,124 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { DisplayItemsProps } from '@/types';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { DisplayItemsProps, selectedProduct } from '@/types';
 import Product from '../molecules/product';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface displayItemsProp {
-  displayItems: DisplayItemsProps;
+  displayItems: {
+    products: selectedProduct[];
+    title: string;
+    categorySlug: string;
+  };
 }
 
 const DisplayItems = ({ displayItems }: displayItemsProp) => {
   const { products, title, categorySlug } = displayItems;
+  const scrollRef = useRef<HTMLDivElement>(null);
   
-  const [startIndex, setStartIndex] = useState(0);
-  const [itemsToShow, setItemsToShow] = useState(4);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setItemsToShow(1); // Mobile: 1 item
-      } else if (window.innerWidth < 1024) {
-        setItemsToShow(2); // Tablet: 2 items
-      } else {
-        setItemsToShow(4); // Desktop: 4 items
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const nextSlide = () => {
-    // Slide by 1 item at a time
-    if (startIndex + itemsToShow < products.length) {
-      setStartIndex((prev) => prev + 1);
+  // Update button states based on scroll position
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
     }
   };
 
-  const prevSlide = () => {
-    if (startIndex > 0) {
-      setStartIndex((prev) => prev - 1);
+  useEffect(() => {
+    const node = scrollRef.current;
+    if (node) {
+      node.addEventListener('scroll', checkScroll);
+      // Initial check
+      checkScroll();
+      return () => node.removeEventListener('scroll', checkScroll);
+    }
+  }, [products]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' 
+        ? scrollRef.current.scrollLeft - clientWidth 
+        : scrollRef.current.scrollLeft + clientWidth;
+      
+      scrollRef.current.scrollTo({
+        left: scrollTo,
+        behavior: 'smooth'
+      });
     }
   };
 
   return (
-    <section className="w-full py-12 px-4 md:px-8 lg:px-12 bg-white overflow-hidden">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl md:text-2xl font-bold uppercase tracking-tight text-slate-900">
-          {title}
-        </h2>
-        
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={prevSlide}
-            disabled={startIndex === 0}
-            className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="h-5 w-5 text-slate-600" />
-          </button>
-          <button 
-            onClick={nextSlide}
-            disabled={startIndex + itemsToShow >= products.length}
-            className="p-2 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-          >
-            <ChevronRight className="h-5 w-5 text-slate-600" />
-          </button>
+    <section className="w-full py-16 px-4 md:px-8 lg:px-12 bg-white">
+      <div className="max-w-[1600px] mx-auto">
+        <div className="flex items-end justify-between mb-10">
+          <div className="space-y-2">
+            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-zinc-900">
+              {title}
+            </h2>
+            <div className="h-1 w-12 bg-zinc-900" />
+          </div>
+          
+          {/* Navigation Controls - Hidden on very small screens if preferred, 
+              but usually good to keep for accessibility */}
+          <div className="hidden sm:flex items-center gap-3">
+            <button 
+              onClick={() => scroll('left')}
+              disabled={!canScrollLeft}
+              className="p-3 rounded-full border border-zinc-200 hover:bg-zinc-900 hover:text-white transition-all disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-zinc-400"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button 
+              onClick={() => scroll('right')}
+              disabled={!canScrollRight}
+              className="p-3 rounded-full border border-zinc-200 hover:bg-zinc-900 hover:text-white transition-all disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-zinc-400"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Sliding Track Container */}
-      <div className="relative">
-        <motion.div 
-          className="flex gap-6 md:gap-8"
-          initial={false}
-          animate={{ x: `calc(-${startIndex * (100 / itemsToShow)}% - ${startIndex * (32 / itemsToShow)}px)` }}
-          transition={{ type: "spring", stiffness: 200, damping: 25 }} // Smooth glide
+        {/* Sliding Track */}
+        <div 
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {products.map((product) => (
-            <div 
+            <motion.div 
               key={product.id} 
-              style={{ flex: `0 0 calc(${100 / itemsToShow}% - ${( (itemsToShow - 1) * 32) / itemsToShow}px)` }}
+              className="min-w-[85%] sm:min-w-[45%] lg:min-w-[23%] snap-start"
+              whileHover={{ y: -5 }}
+              transition={{ duration: 0.3 }}
             >
-              <Product product = {product} />
-            </div>
+              <Product product={product} />
+            </motion.div>
           ))}
-        </motion.div>
-      </div>
+        </div>
 
-      <div className="mt-12 flex justify-center">
-        <Link href={`/shop/${categorySlug}`}>
-          <Button 
-            variant="outline" 
-            className="rounded-full px-12 py-6 text-sm font-bold uppercase tracking-widest bg-black text-white hover:bg-zinc-800 transition-all flex items-center gap-2"
-          >
-            View All
-            <span className="w-1.5 h-1.5 rounded-full bg-white ml-1" />
-          </Button>
-        </Link>
+        {/* View All Button */}
+        <div className="mt-14 flex justify-center">
+          <Link href={`/shop/${categorySlug}`}>
+            <Button 
+              className="group relative overflow-hidden rounded-full bg-zinc-900 px-10 py-7 text-sm font-bold uppercase tracking-[0.2em] text-white transition-all hover:bg-zinc-800"
+            >
+              <span className="relative z-10 flex items-center gap-3">
+                Explore Collection
+                <div className="h-1.5 w-1.5 rounded-full bg-white transition-transform group-hover:scale-150" />
+              </span>
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );
