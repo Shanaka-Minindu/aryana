@@ -13,10 +13,14 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import HeaderLeftDrawer from "../molecules/header-left-drawer";
+import ShoppingCart from "./shopping-cart";
+import { Session } from "next-auth";
+import { useCartStore } from "@/store/use-cart-store";
 
-const Header = () => {
+const Header = ({ session }: { session?: Session }) => {
   const [navItems, setNavItems] = useState<HeaderItem[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { onOpen, cartCount } = useCartStore();
   useEffect(() => {
     const fetchNav = async () => {
       const response = await getHeaderItems();
@@ -124,12 +128,19 @@ const Header = () => {
             <User className="h-5 w-5 lg:h-6 lg:w-6" />
           </Link>
 
-          <button className="group relative p-2 text-slate-600 hover:text-slate-900">
+          <button
+            onClick={() => {
+              onOpen();
+              
+            }}
+            className="group relative p-2 text-slate-600 hover:text-slate-900"
+          >
             <ShoppingBag className="h-5 w-5 lg:h-6 lg:w-6" />
             <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
-              0
+              {cartCount}
             </span>
           </button>
+          <ShoppingCart session={session} />
         </div>
       </div>
     </header>

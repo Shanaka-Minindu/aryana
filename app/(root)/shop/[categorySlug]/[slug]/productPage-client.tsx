@@ -2,22 +2,31 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGetProductSizes } from "@/hooks/use-get-product-sizes";
 import { ProductWithRelations } from "@/types";
 import { AddToCartSchema } from "@/lib/validators";
 import ProductSkeleton from "@/components/organisms/product-skeleton";
+import { Session } from "next-auth";
+import toast from "react-hot-toast";
+import { addItemToCart } from "@/lib/actions/cart.actions";
+import { useCartStore } from "@/store/use-cart-store";
 
 // --- 2. The Main Component ---
 interface props {
   productData: ProductWithRelations;
+  session?: Session;
 }
 
-const ProductPageClient = ({ productData }: props) => {
+const ProductPageClient = ({ productData, session }: props) => {
   const { colors, getSizes, sizesIsActive, sizesNStock } = useGetProductSizes(
     productData.variants,
   );
@@ -26,11 +35,16 @@ const ProductPageClient = ({ productData }: props) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [showAllImages, setShowAllImages] = useState(false);
   const [errors, setErrors] = useState<{ color?: string; size?: string }>({});
+const { onOpen, triggerRefresh } = useCartStore();
+
+const {onClose} = useCartStore();
 
   // Fix Hydration: Only run effects after mount
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+    onClose();
+    
   }, []);
   const images = productData.images;
   const isSingleImage = images.length === 1;
@@ -43,7 +57,7 @@ const ProductPageClient = ({ productData }: props) => {
     getSizes(color, productData.id);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     const result = AddToCartSchema.safeParse({
       color: selectedColor,
       size: selectedSize,
@@ -51,15 +65,87 @@ const ProductPageClient = ({ productData }: props) => {
       quantity: 1,
     });
 
-    if (!result.success) {
-      const formattedErrors = result.error.format();
+    // 3. Handle Validation Errors
+    if (!result || !result.success) {
+      const formattedErrors = result?.error.format();
       setErrors({
-        color: formattedErrors.color?._errors[0],
-        size: formattedErrors.size?._errors[0],
+        color: formattedErrors?.color?._errors[0],
+        size: formattedErrors?.size?._errors[0],
+      });
+      // Optional: Add a toast error here for better UX
+
+      return;
+    }
+    const toastId = toast.loading("Adding items to your bag...");
+    // 1. Find the correct variant
+    const variant = productData.variants.find(
+      (v) =>
+        v.color === selectedColor &&
+        v.size === selectedSize &&
+        v.productId === productData.id,
+    );
+    console.log(variant);
+
+    if (!variant?.id) {
+      toast.error("Something went wrong!!, Please try again", {
+        id: toastId,
       });
       return;
     }
-    alert(JSON.stringify(result.data, null, 2));
+
+    const { quantity } = result.data;
+
+    // 4. Integration Logic
+    if (session?.user?.id && session.user.cartId) {
+      // --- Authenticated User ---
+      const response = await addItemToCart({
+        cartIdFromClient: session?.user?.cartId,
+        quantity,
+        userId: session?.user?.id,
+        variantId: variant.id,
+      });
+
+      if (response.success) {
+        onOpen();          // Opens the drawer
+        triggerRefresh();  // Tells the drawer to fetch the new data
+        toast.success("Woo hoo it's in your bag now", { id: toastId });
+      } else {
+        toast.error("something went wrong!!, Please try again", {
+          id: toastId,
+        });
+      }
+    } else {
+      // --- Unauthorized (Guest) User ---
+
+      // Retrieve existing cart or initialize empty array
+      const localCart = localStorage.getItem("guest-cart");
+      const cartItems: { variantId: string; quantity: number }[] = localCart
+        ? JSON.parse(localCart)
+        : [];
+
+      // Check if this specific variant is already in the cart
+      const existingItemIndex = cartItems.findIndex(
+        (item) => item.variantId === variant.id,
+      );
+
+      if (existingItemIndex !== -1) {
+        // If it exists, increment the quantity
+        cartItems[existingItemIndex].quantity += quantity;
+      } else {
+        // If it's new, add the object
+        cartItems.push({ variantId: variant.id, quantity });
+      }
+
+      // Save back to LocalStorage
+      localStorage.setItem("guest-cart", JSON.stringify(cartItems));
+
+      onOpen();
+      triggerRefresh();
+
+      // Success Toast
+      toast.success("Added to local cart!", { id: toastId });
+    }
+
   };
 
   if (!mounted) {
@@ -71,7 +157,7 @@ const ProductPageClient = ({ productData }: props) => {
       className="max-w-[1600px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-6 gap-12"
       suppressHydrationWarning
     >
-    {/* Gallery Section (Left Side) */}
+      {/* Gallery Section (Left Side) */}
       <div className="lg:col-span-4 space-y-4">
         {isSingleImage ? (
           <div className="relative w-full aspect-[4/5] bg-zinc-50 overflow-hidden">
@@ -119,15 +205,19 @@ const ProductPageClient = ({ productData }: props) => {
                 >
                   {showAllImages ? (
                     <>
-                      <ChevronUp size={18} /> 
+                      <ChevronUp size={18} />
                       <span className="hidden lg:inline">Show Less Images</span>
                       <span className="lg:hidden">Show Less</span>
                     </>
                   ) : (
                     <>
-                      <ChevronRight size={18} className="lg:hidden" /> {/* Arrow points right on mobile */}
-                      <ChevronLeft size={18} className="hidden lg:block" /> {/* Arrow points down on desktop */}
-                      <span className="hidden lg:inline">View All {images.length} Images</span>
+                      <ChevronRight size={18} className="lg:hidden" />{" "}
+                      {/* Arrow points right on mobile */}
+                      <ChevronLeft size={18} className="hidden lg:block" />{" "}
+                      {/* Arrow points down on desktop */}
+                      <span className="hidden lg:inline">
+                        View All {images.length} Images
+                      </span>
                       <span className="lg:hidden">View More</span>
                     </>
                   )}

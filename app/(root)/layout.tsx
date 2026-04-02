@@ -1,16 +1,27 @@
+"use server";
 import React from "react";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
 import Header from "@/components/organisms/header";
+import { auth } from "@/auth";
 
-const layout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
+const layout = async ({
+  children,
+}: Readonly<{ children: React.ReactNode }>) => {
+  
+  const session= await auth();
+  
+
+
   return (
+    
     <main>
-      <Toaster position="top-right" reverseOrder={false}/>
+      <Toaster position="top-right" reverseOrder={false} />
 
       <SessionProvider>
-        <Header/>
-        {children}</SessionProvider>
+        <Header session={session || undefined}/>
+        {children}
+      </SessionProvider>
     </main>
   );
 };

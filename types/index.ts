@@ -73,12 +73,33 @@ export interface getFilterDataRes {
   highPrice: number;
 }
 
+export interface filterType {
+  size: string[];
+  inStock: string[];
+  color: string[];
+  minPrice: string | null;
+  maxPrice: string | null;
+}
 
+export interface CartItemProps {
+  variantId: string;
+  imageUrl: string;
+  title: string;
+  color: string;
+  size: string;
+  stock: number;
+  qty: number;
+  price: number;
+  isSale: boolean;
+  salePrice?: number;
+  disableQtyBtn: boolean;
+  addQty: (id: string) => void;
+  removeQty: (id: string) => void;
+  slug: string;
+  removeItem: (id: string) => void;
+}
 
-export interface filterType{
-    size: string[];
-    inStock: string[];
-    color: string[];
-    minPrice: string | null;
-    maxPrice: string | null;
-  };
+export type CartItemsServerRes = Omit<
+  CartItemProps,
+  "addQty" | "removeQty" | "removeItem" | "disableQtyBtn"
+>;

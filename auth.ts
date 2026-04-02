@@ -28,6 +28,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
+          include:{
+            cart:true
+          }
         });
 
         if (!user || !user.password) return null;
@@ -45,6 +48,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          cartId:user.cart?.id
         };
       },
     }),
@@ -57,12 +61,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sub = user.id;
         token.email = user.email;
         token.name = user.name;
+        token.cartId = user.cartId;
         return token;
       }
       // On subsequent requests, refresh token data if needed
       if (token.sub) {
         const existingUser = await prisma.user.findUnique({
           where: { id: token.sub },
+          include: { cart: { select: { id: true } } }
         });
 
         // If user not found, something is wrong
@@ -73,6 +79,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = existingUser.role;
         token.name = existingUser.name;
         token.email = existingUser.email;
+        token.cartId = existingUser.cart?.id;
       }
 
       return token;
@@ -83,6 +90,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       if (token.role) {
         session.user.role = token.role as Role;
+      }
+      if (token.cartId) {
+        session.user.cartId = token.cartId as string; // Add this line
       }
 
       session.user.email = token.email as string;
