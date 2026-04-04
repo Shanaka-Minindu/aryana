@@ -18,7 +18,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -74,45 +74,8 @@ const SigninForm = () => {
   };
 
   return (
-    <div className="w-full flex flex-col max-w-sm mx-auto">
-      {/* Tab Switcher - Centered and Minimalist */}
-      <div className="mx-auto">
-        <Tabs defaultValue="login" className="w-full mb-12 justify-end">
-          {/* justify-center centers the tabs; h-auto prevents unwanted vertical padding */}
-          <TabsList className="bg-transparent border-none flex gap-12 p-0 h-auto">
-            <TabsTrigger
-              value="login"
-              className="text-lg font-medium rounded-none border-b-4 pb-2 shadow-none  
-                   data-[state=active]:border-slate-600 
-                   data-[state=active]:text-slate-800 
-                    data-[state=active]:border-t-0
-                    data-[state=active]:border-l-0
-                    data-[state=active]:border-r-0
-                    px-5
-                   data-[state=active]:bg-transparent 
-                   data-[state=active]:shadow-none 
-                   text-slate-400"
-            >
-              Login
-            </TabsTrigger>
-            <TabsTrigger
-              value="signup"
-              className="text-lg font-medium rounded-none border-b-4 border-transparent bg-transparent pb-2 shadow-none transition-all 
-                   data-[state=active]:border-slate-600 
-                   data-[state=active]:text-slate-800 
-                    data-[state=active]:border-t-0
-                    data-[state=active]:border-l-0
-                    data-[state=active]:border-r-0
-                    px-5
-                   data-[state=active]:bg-transparent 
-                   data-[state=active]:shadow-none 
-                   text-slate-400"
-            >
-              SignUp
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+    <div className="w-full flex flex-col m">
+      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* Email Field */}

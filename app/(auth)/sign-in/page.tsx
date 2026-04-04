@@ -4,6 +4,8 @@ import React from "react";
 import SigninForm from "./signin-form";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SignupFrom from "./signup-from";
 
 const SignInPage = async (props: {
   searchParams: Promise<{ callbackUrl: string }>;
@@ -37,8 +39,53 @@ const SignInPage = async (props: {
               Hello, <span className="text-slate-500">Guys!</span>
             </h1>
           </div>
-
-          <SigninForm />
+          {/* Tab Switcher - Centered and Minimalist */}
+          
+            <Tabs defaultValue="login" className="w-full p-5 sm:p-0 flex flex-row mb-12 ">
+              {/* justify-center centers the tabs; h-auto prevents unwanted vertical padding */}
+             <div className="">
+              <TabsList className="bg-transparent border-none w-full mb-5 gap-12">
+                <TabsTrigger
+                  value="login"
+                  className="text-lg font-medium rounded-none border-b-4 pb-2 shadow-none  
+                   data-[state=active]:border-slate-600 
+                   data-[state=active]:text-slate-800 
+                    data-[state=active]:border-t-0
+                    data-[state=active]:border-l-0
+                    data-[state=active]:border-r-0
+                    px-5
+                   data-[state=active]:bg-transparent 
+                   data-[state=active]:shadow-none 
+                   text-slate-400"
+                >
+                  Login
+                </TabsTrigger>
+                <TabsTrigger
+                  value="signup"
+                  className="text-lg font-medium rounded-none border-b-4 border-transparent bg-transparent pb-2 shadow-none transition-all 
+                   data-[state=active]:border-slate-600 
+                   data-[state=active]:text-slate-800 
+                    data-[state=active]:border-t-0
+                    data-[state=active]:border-l-0
+                    data-[state=active]:border-r-0
+                    px-5
+                   data-[state=active]:bg-transparent 
+                   data-[state=active]:shadow-none 
+                   text-slate-400"
+                >
+                  SignUp
+                </TabsTrigger>
+              </TabsList>
+             
+              <TabsContent value="login" className="w-full">
+                <SigninForm />
+              </TabsContent>
+              <TabsContent value="signup" className="w-full">
+                <SignupFrom />
+              </TabsContent>
+              </div>
+            </Tabs>
+          
         </CardContent>
       </Card>
     </div>

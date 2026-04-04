@@ -103,3 +103,18 @@ export type CartItemsServerRes = Omit<
   CartItemProps,
   "addQty" | "removeQty" | "removeItem" | "disableQtyBtn"
 >;
+
+
+
+
+export interface deliveryInfo{
+  id:string;
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  district: string;
+  postalCode: string;
+  country: string;
+}
