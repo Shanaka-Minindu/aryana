@@ -118,3 +118,11 @@ export interface deliveryInfo{
   postalCode: string;
   country: string;
 }
+
+export interface getCategoryProps {
+  id: string;
+  name: string;
+  parentId?: string | null;
+  image?:string | null;
+  slug:string
+}

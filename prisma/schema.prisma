@@ -218,11 +218,11 @@ model Order {
   totalAmount     Int
   stripeSessionId String?     @unique
 
-  items    OrderItem[]
-  delivery DeliveryInfo?
-shippingCost Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  items        OrderItem[]
+  delivery     DeliveryInfo?
+  shippingCost Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@index([userId])
 }
@@ -366,7 +366,7 @@ model DisplayItemProduct {
 model ShippingCost {
   id       String    @id @default(uuid())
   district Districts @unique
-  cost     Int 
+  cost     Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

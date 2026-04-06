@@ -62,16 +62,6 @@ export async function getDisplayItems(
         const finalImages: ProductImage[] = [];
         if (primaryImg) finalImages.push(primaryImg);
         if (secondaryImg) finalImages.push(secondaryImg);
- console.log({id: product.id,
-          name: product.name,
-          price: product.price,
-          categorySlug:displayItem.slug,
-          slug: product.slug,
-          isActive: product.isActive,
-          isSale: product.isSale,
-          salePrice: product.salePrice || undefined,
-          colors: uniqueColors,
-          images: finalImages,})
 
         return {
           id: product.id,

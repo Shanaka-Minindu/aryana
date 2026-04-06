@@ -79,3 +79,30 @@ export const deliveryInfoSchema = addressInfoSchema.extend({
     message: "You must check this box to proceed.",
   }),
 });
+
+
+export const newCategoryValidator = z.object({
+  name: z
+    .string()
+    .min(1, "Category name is required.")
+    .max(50, "Name is too long."),
+
+  slug: z
+    .string()
+    .min(1, "Slug is required.")
+    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens."),
+
+parentId: z
+    .string()
+    .uuid("Invalid parent category ID.")
+    .or(z.literal("MAIN")) // Add this to allow the "MAIN" value from your Select
+    .or(z.literal(""))
+    .or(z.null())
+    .optional(),
+  image: z
+    .string()
+    .url("Please provide a valid image URL.")
+    .optional()
+    .or(z.literal(""))
+    .or(z.null()),
+});

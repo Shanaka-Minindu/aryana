@@ -1,9 +1,10 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
-import { leftDrawer } from "@/lib/actions/header.actions"; // Adjust path as needed
+import { leftDrawer } from "@/lib/actions/header.actions"; 
 import {
   Drawer,
   DrawerClose,
@@ -13,6 +14,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Menu } from "lucide-react";
+import { Session } from "next-auth";
 
 interface CategoryItem {
   id: string;
@@ -20,26 +22,45 @@ interface CategoryItem {
   slug: string;
 }
 
-const HeaderLeftDrawer = () => {
+const HeaderLeftDrawer = ({ session }: { session?: Session }) => {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await leftDrawer();
-        if (response.success && response.data) {
-          setCategories(response.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch drawer categories:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const role = session?.user.role;
 
-    fetchCategories();
-  }, []);
+  const adminCategory: CategoryItem[] = [
+    { id: "1", name: "Dashboard", slug: "dashboard" },
+    { id: "2", name: "Orders", slug: "order" },
+    { id: "3", name: "Add Category", slug: "add_category" },
+    { id: "4", name: "Add Product", slug: "add_product" },
+    { id: "5", name: "Customize Carousel", slug: "customize_carousel" },
+    { id: "6", name: "Shipping", slug: "shipping" },
+  ];
+
+  if (role === "ADMIN") {
+    useEffect(() => {
+      setCategories(adminCategory);
+      setLoading(false)
+    }, []);
+    
+  } else {
+    useEffect(() => {
+      const fetchCategories = async () => {
+        try {
+          const response = await leftDrawer();
+          if (response.success && response.data) {
+            setCategories(response.data);
+          }
+        } catch (error) {
+          console.error("Failed to fetch drawer categories:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchCategories();
+    }, []);
+  }
 
   return (
     <Drawer direction="left">
@@ -75,7 +96,7 @@ const HeaderLeftDrawer = () => {
                 >
                   <DrawerClose asChild>
                     <Link
-                      href={`/shop/${category.slug}`}
+                      href={`/${role === "ADMIN"?"admin":"shop"}/${category.slug}`}
                       className="block py-4 text-[16px] font-bold tracking-tight hover:text-zinc-400 transition-colors uppercase"
                     >
                       {category.name}

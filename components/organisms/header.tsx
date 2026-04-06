@@ -37,7 +37,7 @@ const Header = ({ session }: { session?: Session }) => {
       <div className="container mx-auto flex h-20 items-center justify-between px-0 lg:px-8">
         {/* LEFT SECTION: Drawer Trigger & Logo */}
         <div className="flex items-center gap-4 lg:w-1/6">
-          <HeaderLeftDrawer />
+          <HeaderLeftDrawer session={session}/>
           <Link
             href="/"
             className="text-2xl font-bold tracking-tighter text-slate-900 lg:text-3xl"
