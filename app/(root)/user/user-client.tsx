@@ -26,7 +26,7 @@ const UserClient = ({ session, userAddressData }: UserClientProps) => {
   // Prevent hydration mismatch by returning a consistent shell
   // until the client-side logic (useEffect) has run.
   return (
-    <div className="flex flex-col w-full md:w-2/4 m-auto gap-8 py-10">
+    <div className="flex flex-col w-full md:w-3/4 lg:w-2/4  m-auto gap-8 px-5 py-10">
       <UserProfileNameCard session={session} />
       
       {/* Only render the conditional parts once mounted */}

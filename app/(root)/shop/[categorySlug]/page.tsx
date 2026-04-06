@@ -53,7 +53,7 @@ const CategoryPage = async ({
       <CategoryClient
         currentPage={productsRes.data?.currentPage || 1}
         totalPage={productsRes.data?.totalPages || 1}
-        totalProducts={productsRes.data?.totalProducts||1}
+        totalProducts={productsRes.data?.totalProducts||0}
         filterData={filterRes.data}
         products={productsRes.data?.product || []}
         isDisabled={false}

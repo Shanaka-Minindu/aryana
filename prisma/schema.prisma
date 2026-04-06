@@ -33,6 +33,34 @@ enum TextPosition {
   CENTER
 }
 
+enum Districts {
+  KANDY
+  MATALE
+  NUWARA_ELIYA
+  AMPARA
+  BATTICALOA
+  TRINCOMALEE
+  ANURADHAPURA
+  POLONNARUWA
+  KURUNEGALA
+  PUTTALAM
+  JAFFNA
+  KILINOCHCHI
+  MANNAR
+  MULLAITIVU
+  VAVUNIYA
+  KEGALLE
+  RATNAPURA
+  GALLE
+  HAMBANTOTA
+  MATARA
+  BADULLA
+  MONERAGALA
+  COLOMBO
+  GAMPAHA
+  KALUTARA
+}
+
 // --- AUTH & USER ---
 
 model User {
@@ -63,7 +91,7 @@ model UserAddress {
   addressLine1 String
   addressLine2 String?
   city         String
-  district     String
+  district     Districts @default(COLOMBO)
   postalCode   String?
   country      String
 
@@ -100,10 +128,10 @@ model Product {
   id          String   @id @default(uuid())
   name        String
   description String
-  price       Float
+  price       Int
   isActive    Boolean  @default(true)
   isSale      Boolean  @default(false)
-  salePrice   Float?
+  salePrice   Int?
   slug        String   @unique
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
@@ -187,12 +215,12 @@ model Order {
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   status          OrderStatus @default(PENDING)
-  totalAmount     Float
+  totalAmount     Int
   stripeSessionId String?     @unique
 
   items    OrderItem[]
   delivery DeliveryInfo?
-
+shippingCost Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -208,7 +236,7 @@ model OrderItem {
   variant   ProductVariant @relation(fields: [variantId], references: [id])
 
   quantity Int
-  price    Float // Snapshot of price at time of purchase
+  price    Int // Snapshot of price at time of purchase
 
   @@index([orderId])
 }
@@ -218,14 +246,15 @@ model DeliveryInfo {
   orderId String @unique
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  fullName     String
-  phone        String
-  addressLine1 String
-  addressLine2 String?
-  city         String
-  district     String
-  postalCode   String?
-  country      String
+  fullName       String
+  phone          String
+  addressLine1   String
+  addressLine2   String?
+  city           String
+  district       Districts @default(COLOMBO)
+  postalCode     String?
+  country        String
+  additionalNote String?
 
   createdAt DateTime @default(now())
 }
@@ -332,4 +361,13 @@ model DisplayItemProduct {
   @@unique([displayItemId, productId])
   @@unique([displayItemId, position])
   @@index([productId])
+}
+
+model ShippingCost {
+  id       String    @id @default(uuid())
+  district Districts @unique
+  cost     Int 
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

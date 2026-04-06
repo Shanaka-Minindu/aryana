@@ -5,9 +5,9 @@ import React, { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { deliveryInfo, ServerActionResponse } from "@/types";
-import { deliveryInfoSchema } from "@/lib/validators";
-
+import { deliveryInfo } from "@/types";
+import { addressInfoSchema } from "@/lib/validators";
+import { Districts } from "@/lib/generated/prisma";
 import {
   Form,
   FormControl,
@@ -16,6 +16,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // Import Select components
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,18 +43,17 @@ import {
 } from "@/lib/actions/user.actions";
 
 interface UserAddressFormProps {
-  data?: deliveryInfo
+  data?: deliveryInfo;
   clientId: string;
-  addAddressTrigger:()=>void
+  addAddressTrigger: () => void;
 }
 
-const UserAddressForm = ({ data, clientId ,addAddressTrigger}: UserAddressFormProps) => {
+const UserAddressForm = ({ data, clientId, addAddressTrigger }: UserAddressFormProps) => {
   const [isPending, startTransition] = useTransition();
-  // If no data exists, start in Edit mode. Otherwise, start in Read mode.
   const [isReadOnly, setIsReadOnly] = useState(!!data);
 
-  const form = useForm<z.infer<typeof deliveryInfoSchema>>({
-    resolver: zodResolver(deliveryInfoSchema),
+  const form = useForm<z.infer<typeof addressInfoSchema>>({
+    resolver: zodResolver(addressInfoSchema),
     defaultValues: {
       fullName: data?.fullName || "",
       phone: data?.phone || "",
@@ -60,10 +66,18 @@ const UserAddressForm = ({ data, clientId ,addAddressTrigger}: UserAddressFormPr
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof deliveryInfoSchema>) => {
-    
+  // Helper to format: KANDY -> Kandy, NUWARA_ELIYA -> Nuwara Eliya
+  const formatDistrictName = (name: string) => {
+    return name
+      .toLowerCase()
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  const onSubmit = async (values: z.infer<typeof addressInfoSchema>) => {
     startTransition(async () => {
-        addAddressTrigger();
+      addAddressTrigger();
       const formData = new FormData();
       Object.entries(values).forEach(([key, value]) => {
         formData.append(key, value || "");
@@ -74,8 +88,6 @@ const UserAddressForm = ({ data, clientId ,addAddressTrigger}: UserAddressFormPr
       if (res.success) {
         setIsReadOnly(true);
         toast.success(res.message || "Updated Successfully");
-          
-        
       } else {
         toast.error(res.message || "Please try again later");
         if (res.fieldErrors) {
@@ -102,7 +114,7 @@ const UserAddressForm = ({ data, clientId ,addAddressTrigger}: UserAddressFormPr
   };
 
   const inputClasses =
-    "rounded-lg border-zinc-200  m-2 p-4 focus-visible:ring-zinc-900 h-10 disabled:opacity-100 disabled:bg-zinc-50 disabled:text-zinc-500 transition-all";
+    "rounded-lg border-zinc-200 m-2 p-4 focus-visible:ring-zinc-900 h-10 disabled:opacity-100 disabled:bg-zinc-50 disabled:text-zinc-500 transition-all";
 
   return (
     <div className="w-full bg-white border border-zinc-100 rounded-[2rem] p-8 shadow-sm">
@@ -123,25 +135,19 @@ const UserAddressForm = ({ data, clientId ,addAddressTrigger}: UserAddressFormPr
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  className="rounded-md w-25 h-10 font-bold px-6"
-                >
+                <Button variant="destructive" className="rounded-md w-25 h-10 font-bold px-6">
                   Delete
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="">
+              <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    your delivery address.
+                    This action cannot be undone. This will permanently delete your delivery address.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="px-4 py-4">
-                    Cancel
-                  </AlertDialogCancel>
+                  <AlertDialogCancel className="px-4 py-4">Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDelete}
                     className="px-4 py-4 bg-red-600 hover:bg-red-700"
@@ -158,42 +164,29 @@ const UserAddressForm = ({ data, clientId ,addAddressTrigger}: UserAddressFormPr
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Full Name */}
+            {/* Full Name & Phone - Keep Existing */}
             <FormField
               control={form.control}
               name="fullName"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel className="text-zinc-500 font-bold">
-                    Full Name:
-                  </FormLabel>
+                  <FormLabel className="text-zinc-500 font-bold">Full Name:</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
+                    <Input {...field} disabled={isReadOnly || isPending} className={inputClasses} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Phone Number */}
             <FormField
               control={form.control}
               name="phone"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel className="text-zinc-500 font-bold">
-                    Phone Number:
-                  </FormLabel>
+                  <FormLabel className="text-zinc-500 font-bold">Phone Number:</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
+                    <Input {...field} disabled={isReadOnly || isPending} className={inputClasses} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -206,120 +199,96 @@ const UserAddressForm = ({ data, clientId ,addAddressTrigger}: UserAddressFormPr
               name="country"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-500 font-bold">
-                    Country:
-                  </FormLabel>
+                  <FormLabel className="text-zinc-500 font-bold">Country:</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
+                    <Input {...field} disabled className={inputClasses} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* District */}
+            {/* District - CHANGED TO SELECT */}
             <FormField
               control={form.control}
               name="district"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-500 font-bold">
-                    District:
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
-                  </FormControl>
+                  <FormLabel className="text-zinc-500 font-bold">District:</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isReadOnly || isPending}
+                  >
+                    <FormControl>
+                      <SelectTrigger  className={inputClasses}>
+                        <SelectValue  placeholder="Select a district" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent >
+                      {Object.values(Districts).map((district) => (
+                        <SelectItem className="h-13"  key={district} value={district}>
+                          {formatDistrictName(district)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Address Line 1 */}
+            {/* Other Fields - Keep Existing */}
             <FormField
               control={form.control}
               name="addressLine1"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel className="text-zinc-500 font-bold">
-                    Address line 1:
-                  </FormLabel>
+                  <FormLabel className="text-zinc-500 font-bold">Address line 1:</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
+                    <Input {...field} disabled={isReadOnly || isPending} className={inputClasses} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Address Line 2 */}
             <FormField
               control={form.control}
               name="addressLine2"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel className="text-zinc-500 font-bold">
-                    Address line 2 (optional):
-                  </FormLabel>
+                  <FormLabel className="text-zinc-500 font-bold">Address line 2 (optional):</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
+                    <Input {...field} disabled={isReadOnly || isPending} className={inputClasses} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* City */}
             <FormField
               control={form.control}
               name="city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-500 font-bold">
-                    City:
-                  </FormLabel>
+                  <FormLabel className="text-zinc-500 font-bold">City:</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
+                    <Input {...field} disabled={isReadOnly || isPending} className={inputClasses} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Postal Code */}
             <FormField
               control={form.control}
               name="postalCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-500 font-bold">
-                    Postal Code:
-                  </FormLabel>
+                  <FormLabel className="text-zinc-500 font-bold">Postal Code:</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isReadOnly || isPending}
-                      className={inputClasses}
-                    />
+                    <Input {...field} disabled={isReadOnly || isPending} className={inputClasses} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

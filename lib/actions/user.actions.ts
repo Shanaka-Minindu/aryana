@@ -2,7 +2,7 @@
 
 import { auth, signIn } from "@/auth";
 import {
-  deliveryInfoSchema,
+  addressInfoSchema,
   loginSchema,
   registrationSchema,
 } from "../validators";
@@ -11,6 +11,7 @@ import { AuthError } from "next-auth";
 import { prisma } from "@/db/prisma";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { Districts } from "../generated/prisma";
 
 export async function signInWithCredentials(
   formData: FormData,
@@ -261,7 +262,7 @@ export async function createOrUpdateUserAddress({
 
     // 2. Extract and Validate Data
     const rawData = Object.fromEntries(formData.entries());
-    const validatedFields = deliveryInfoSchema.safeParse(rawData);
+    const validatedFields = addressInfoSchema.safeParse(rawData);
 
     if (!validatedFields.success) {
       return {
@@ -297,7 +298,7 @@ export async function createOrUpdateUserAddress({
           addressLine1,
           addressLine2: addressLine2 || null,
           city,
-          district,
+          district: district as Districts,
           postalCode,
           country,
         },
@@ -312,7 +313,7 @@ export async function createOrUpdateUserAddress({
           addressLine1,
           addressLine2: addressLine2 || null,
           city,
-          district,
+          district: district as Districts,
           postalCode,
           country,
           isDefault: true,
@@ -390,7 +391,7 @@ export async function deleteAddress(
         });
       }
     }
-revalidatePath("/user");
+    revalidatePath("/user");
     return {
       success: true,
       message: "Address deleted successfully.",

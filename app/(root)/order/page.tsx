@@ -1,9 +1,13 @@
 import React from 'react'
+import OrderClient from './order-client'
+import { auth } from '@/auth'
 
-const Cart = () => {
+const Cart = async() => {
+  const session = await auth()
+  
   return (
     <div>
-      hello cart
+      <OrderClient session={session||undefined}/>
     </div>
   )
 }

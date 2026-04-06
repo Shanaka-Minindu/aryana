@@ -32,18 +32,18 @@ const CartItem = ({
   const hasMultipleQty = qty > 1;
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-[2rem] border border-zinc-100 bg-white shadow-sm transition-all hover:shadow-md">
+    <div className="group flex flex-col overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-sm transition-all hover:shadow-md">
       {/* Main Item Row */}
-      <div className="flex items-center gap-4 p-4 md:gap-6">
+      <div className="flex items-center  gap-4 p-4 md:gap-6">
         {/* Product Image */}
-        <div className="relative h-24 w-20 flex-shrink-0 overflow-hidden rounded-2xl bg-zinc-100 md:h-28 md:w-24">
+        <div className="relative h-24 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-zinc-100 md:h-28 md:w-24">
           <Link href={`/shop/${slug}`}>
             <Image src={imageUrl} alt={title} fill className="object-cover" />
           </Link>
         </div>
-        <div className="flex flex-col md:flex-row">
+        <div className="flex flex-col w-full justify-between  sm:flex-row">
           {/* Details Section */}
-          <div className="flex flex-1 flex-col justify-center gap-0.5">
+          <div className="flex flex-col  gap-0.5">
             <Link
               href={`/shop/${slug}`}
               className="text-sm font-bold leading-tight text-zinc-900 transition-colors hover:text-zinc-600 md:text-base"
@@ -83,9 +83,9 @@ const CartItem = ({
           </div>
 
           {/* Action Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center w-full gap-3">
             {/* Quantity Controller */}
-            <div className="flex items-center rounded-2xl border border-zinc-200 p-1">
+            <div className="flex items-center rounded-xl m-auto  border border-zinc-200 p-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -112,7 +112,7 @@ const CartItem = ({
             </div>
 
             {/* Desktop/Mobile Remove Button */}
-            <div className="justify-end">
+            <div className="justify-end ml-auto sm:pr-5">
               <Button
                 variant="outline"
                 size="icon"

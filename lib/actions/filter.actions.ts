@@ -102,9 +102,10 @@ export async function getFilteredCategoryData({
 
     const sizesArray = size ? size.split(",") : [];
     const colorsArray = color ? color.split(",") : [];
-    const min = minPrice ? parseFloat(minPrice) : 0;
-    const max = maxPrice ? parseFloat(maxPrice) : Infinity;
+    const min = minPrice ? parseInt(minPrice) : 0;
+    const max = maxPrice ? parseInt(maxPrice) : (await getFilterData()).data?.highPrice;
 
+    
     // 2. Category Logic: Handle "shopAll", Parent Categories, and Child Categories
     let categoryIds: string[] = [];
 
@@ -141,7 +142,7 @@ export async function getFilteredCategoryData({
         },
       },
     };
-
+console.log(where)
     // 4. Fetch Total Count & Paginated Products
     const [totalProducts, productsData] = await Promise.all([
       prisma.product.count({ where }),
@@ -157,6 +158,8 @@ export async function getFilteredCategoryData({
         orderBy: { createdAt: "desc" },
       }),
     ]);
+
+    
 
     // 5. Transform to selectedProduct Interface
     const formattedProducts: selectedProduct[] = productsData.map((product) => {
