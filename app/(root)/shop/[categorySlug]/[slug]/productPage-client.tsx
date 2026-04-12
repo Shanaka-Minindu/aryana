@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -19,8 +20,8 @@ import { Session } from "next-auth";
 import toast from "react-hot-toast";
 import { addItemToCart } from "@/lib/actions/cart.actions";
 import { useCartStore } from "@/store/use-cart-store";
+import { Badge } from "@/components/ui/badge"; // Ensure you have a badge component
 
-// --- 2. The Main Component ---
 interface props {
   productData: ProductWithRelations;
   session?: Session;
@@ -35,22 +36,22 @@ const ProductPageClient = ({ productData, session }: props) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [showAllImages, setShowAllImages] = useState(false);
   const [errors, setErrors] = useState<{ color?: string; size?: string }>({});
-const { onOpen, triggerRefresh } = useCartStore();
+  const { onOpen, triggerRefresh, onClose } = useCartStore();
 
-const {onClose} = useCartStore();
-
-  // Fix Hydration: Only run effects after mount
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     onClose();
-    
   }, []);
+
   const images = productData.images;
   const isSingleImage = images.length === 1;
   const displayImages = showAllImages ? images : images.slice(0, 4);
+  
+  // Logical check for sold out state
+  const isSoldOut = productData.isActive === false;
 
   const handleColorSelect = (color: string) => {
+    if (isSoldOut) return; // Disable selection
     setSelectedColor(color);
     setSelectedSize(null);
     setErrors((prev) => ({ ...prev, color: undefined }));
@@ -58,6 +59,8 @@ const {onClose} = useCartStore();
   };
 
   const handleAddToCart = async () => {
+    if (isSoldOut) return; // Prevent action
+
     const result = AddToCartSchema.safeParse({
       color: selectedColor,
       size: selectedSize,
@@ -65,39 +68,31 @@ const {onClose} = useCartStore();
       quantity: 1,
     });
 
-    // 3. Handle Validation Errors
     if (!result || !result.success) {
       const formattedErrors = result?.error.format();
       setErrors({
         color: formattedErrors?.color?._errors[0],
         size: formattedErrors?.size?._errors[0],
       });
-      // Optional: Add a toast error here for better UX
-
       return;
     }
+    
     const toastId = toast.loading("Adding items to your bag...");
-    // 1. Find the correct variant
     const variant = productData.variants.find(
       (v) =>
         v.color === selectedColor &&
         v.size === selectedSize &&
         v.productId === productData.id,
     );
-    console.log(variant);
 
     if (!variant?.id) {
-      toast.error("Something went wrong!!, Please try again", {
-        id: toastId,
-      });
+      toast.error("Something went wrong!!, Please try again", { id: toastId });
       return;
     }
 
     const { quantity } = result.data;
 
-    // 4. Integration Logic
     if (session?.user?.id && session.user.cartId) {
-      // --- Authenticated User ---
       const response = await addItemToCart({
         cartIdFromClient: session?.user?.cartId,
         quantity,
@@ -106,46 +101,33 @@ const {onClose} = useCartStore();
       });
 
       if (response.success) {
-        onOpen();          // Opens the drawer
-        triggerRefresh();  // Tells the drawer to fetch the new data
+        onOpen();
+        triggerRefresh();
         toast.success("Woo hoo it's in your bag now", { id: toastId });
       } else {
-        toast.error("something went wrong!!, Please try again", {
-          id: toastId,
-        });
+        toast.error("something went wrong!!, Please try again", { id: toastId });
       }
     } else {
-      // --- Unauthorized (Guest) User ---
-
-      // Retrieve existing cart or initialize empty array
       const localCart = localStorage.getItem("guest-cart");
       const cartItems: { variantId: string; quantity: number }[] = localCart
         ? JSON.parse(localCart)
         : [];
 
-      // Check if this specific variant is already in the cart
       const existingItemIndex = cartItems.findIndex(
         (item) => item.variantId === variant.id,
       );
 
       if (existingItemIndex !== -1) {
-        // If it exists, increment the quantity
         cartItems[existingItemIndex].quantity += quantity;
       } else {
-        // If it's new, add the object
         cartItems.push({ variantId: variant.id, quantity });
       }
 
-      // Save back to LocalStorage
       localStorage.setItem("guest-cart", JSON.stringify(cartItems));
-
       onOpen();
       triggerRefresh();
-
-      // Success Toast
       toast.success("Added to local cart!", { id: toastId });
     }
-
   };
 
   if (!mounted) {
@@ -157,7 +139,7 @@ const {onClose} = useCartStore();
       className="max-w-[1600px] mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-6 gap-12"
       suppressHydrationWarning
     >
-      {/* Gallery Section (Left Side) */}
+      {/* Gallery Section */}
       <div className="lg:col-span-4 space-y-4">
         {isSingleImage ? (
           <div className="relative w-full aspect-[4/5] bg-zinc-50 overflow-hidden">
@@ -172,7 +154,6 @@ const {onClose} = useCartStore();
           </div>
         ) : (
           <div className="relative group">
-            {/* The Image Track - Remains flexible */}
             <div className="flex lg:grid lg:grid-cols-2 gap-2 overflow-x-auto lg:overflow-visible no-scrollbar snap-x snap-mandatory">
               <AnimatePresence mode="popLayout" initial={false}>
                 {displayImages.map((img, idx) => (
@@ -181,7 +162,7 @@ const {onClose} = useCartStore();
                     layout
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }} // Smooth transition for removal
+                    exit={{ opacity: 0 }}
                     className="relative aspect-[3/4] min-w-[90vw] lg:min-w-0 bg-zinc-50 snap-center"
                   >
                     <Image
@@ -196,7 +177,6 @@ const {onClose} = useCartStore();
               </AnimatePresence>
             </div>
 
-            {/* View More Logic - Applied to both mobile and large screens */}
             {images.length > 4 && (
               <div className="flex justify-center pt-6 lg:pt-8">
                 <button
@@ -211,13 +191,9 @@ const {onClose} = useCartStore();
                     </>
                   ) : (
                     <>
-                      <ChevronRight size={18} className="lg:hidden" />{" "}
-                      {/* Arrow points right on mobile */}
-                      <ChevronLeft size={18} className="hidden lg:block" />{" "}
-                      {/* Arrow points down on desktop */}
-                      <span className="hidden lg:inline">
-                        View All {images.length} Images
-                      </span>
+                      <ChevronRight size={18} className="lg:hidden" />
+                      <ChevronLeft size={18} className="hidden lg:block" />
+                      <span className="hidden lg:inline">View All {images.length} Images</span>
                       <span className="lg:hidden">View More</span>
                     </>
                   )}
@@ -234,7 +210,17 @@ const {onClose} = useCartStore();
           <h1 className="text-3xl font-medium tracking-tight text-zinc-900 leading-tight">
             {productData.name}
           </h1>
-          <p className="text-zinc-400 text-xs uppercase tracking-widest font-semibold">
+          
+          {/* Sold Out Badge */}
+          {isSoldOut && (
+            <div className="">
+              <Badge variant="destructive" className="rounded-full uppercase text-[10px] tracking-widest px-4 py-3">
+                Sold Out
+              </Badge>
+            </div>
+          )}
+
+          <p className="text-zinc-400 text-xs uppercase tracking-widest font-semibold pt-2">
             {productData.category.name} — SKU: {productData.id.split("-")[0]}
           </p>
           <div className="pt-4">
@@ -265,12 +251,14 @@ const {onClose} = useCartStore();
               {colors.map((color) => (
                 <button
                   key={color}
+                  disabled={isSoldOut} // Deactivate selector
                   onClick={() => handleColorSelect(color)}
                   className={cn(
                     "w-9 h-9 rounded-full border-2 transition-all",
                     selectedColor === color
                       ? "border-black scale-110"
                       : "border-gray-300",
+                    isSoldOut && "opacity-30 cursor-not-allowed grayscale"
                   )}
                   style={{ backgroundColor: color }}
                 />
@@ -290,7 +278,7 @@ const {onClose} = useCartStore();
               {sizesNStock.map(([size, hasStock]) => (
                 <button
                   key={size}
-                  disabled={!sizesIsActive || !hasStock}
+                  disabled={isSoldOut || !sizesIsActive || !hasStock} // Deactivate selector
                   onClick={() => {
                     setSelectedSize(size);
                     setErrors((prev) => ({ ...prev, size: undefined }));
@@ -300,7 +288,7 @@ const {onClose} = useCartStore();
                     selectedSize === size
                       ? "bg-black text-white border-black"
                       : "bg-white text-zinc-900 border-zinc-200 hover:border-black",
-                    (!sizesIsActive || !hasStock) &&
+                    (isSoldOut || !sizesIsActive || !hasStock) &&
                       "opacity-40 cursor-not-allowed bg-zinc-50 border-dashed",
                   )}
                 >
@@ -317,9 +305,15 @@ const {onClose} = useCartStore();
         <div className="space-y-4 pt-4">
           <Button
             onClick={handleAddToCart}
-            className="w-full py-7 rounded-full bg-black text-white uppercase font-bold tracking-widest"
+            disabled={isSoldOut} // Deactivate button
+            className={cn(
+              "w-full py-7 rounded-full uppercase font-bold tracking-widest transition-all",
+              isSoldOut 
+                ? "bg-zinc-200 text-zinc-400 cursor-not-allowed" 
+                : "bg-black text-white"
+            )}
           >
-            Add to Cart
+            {isSoldOut ? "Out of Stock" : "Add to Cart"}
           </Button>
         </div>
 

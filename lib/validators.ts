@@ -80,7 +80,6 @@ export const deliveryInfoSchema = addressInfoSchema.extend({
   }),
 });
 
-
 export const newCategoryValidator = z.object({
   name: z
     .string()
@@ -90,9 +89,12 @@ export const newCategoryValidator = z.object({
   slug: z
     .string()
     .min(1, "Slug is required.")
-    .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens."),
+    .regex(
+      /^[a-z0-9-]+$/,
+      "Slug can only contain lowercase letters, numbers, and hyphens.",
+    ),
 
-parentId: z
+  parentId: z
     .string()
     .uuid("Invalid parent category ID.")
     .or(z.literal("MAIN")) // Add this to allow the "MAIN" value from your Select
@@ -105,4 +107,86 @@ parentId: z
     .optional()
     .or(z.literal(""))
     .or(z.null()),
+});
+
+export const addProductSchema = z
+  .object({
+    name: z.string().min(1, "Product name is required."),
+    slug: z
+      .string()
+      .min(1, "Slug is required.")
+      .regex(
+        /^[a-z0-9-]+$/,
+        "Slug must be lowercase and contain only letters, numbers, or hyphens.",
+      ),
+    description: z
+      .string()
+      .min(10, "Description must be at least 10 characters long."),
+
+    // Validates that the string contains only digits and is not empty
+    price: z
+      .string()
+      .min(1, "Price is required.")
+      .regex(/^\d+$/, "Price must be a whole number (digits only).")
+      .refine((val) => parseInt(val) > 0, "Price must be greater than 0."),
+
+    isSale: z.boolean().default(false),
+
+    // salePrice is an optional string
+    salePrice: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine(
+        (val) => !val || /^\d+$/.test(val),
+        "Sale price must be a whole number.",
+      ),
+
+    category: z.string().min(1, "Please select a category."),
+  })
+  .refine(
+    (data) => {
+      // If isSale is true, salePrice must not be empty and must be > 0
+      if (data.isSale) {
+        return !!data.salePrice && parseInt(data.salePrice) > 0;
+      }
+      return true;
+    },
+    {
+      message: "Sale price is required when the product is on sale.",
+      path: ["salePrice"],
+    },
+  )
+  .refine(
+    (data) => {
+      // Numerical comparison: Parse strings to integers for the check
+      if (data.isSale && data.salePrice && data.price) {
+        return parseInt(data.salePrice) < parseInt(data.price);
+      }
+      return true;
+    },
+    {
+      message: "Sale price must be lower than the regular price.",
+      path: ["salePrice"],
+    },
+  );
+
+// Update your schema
+export const addVariantSchema = z.object({
+  size: z
+    .string()
+    .min(1, "Size is required (e.g., Small, 42, XL)."),
+
+  color: z
+    .string()
+    .min(1, "Color is required (e.g., Red, Blue, #000000)."),
+
+  stock: z
+    .string()
+    .min(1, "Stock quantity is required.")
+    // \d+ ensures only digits 0-9 are allowed
+    .regex(/^\d+$/, "Stock must be a whole number (no decimals or letters).")
+    .refine((val) => parseInt(val, 10) >= 0, {
+      message: "Stock cannot be a negative value.",
+    }),
 });

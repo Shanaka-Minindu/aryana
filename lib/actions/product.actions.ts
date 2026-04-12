@@ -12,7 +12,7 @@ export async function getProduct(
     const product = await prisma.product.findUnique({
       where: {
         slug: slug,
-        isActive: true, // Ensure we don't return "hidden" or deleted products
+      //  isActive: true, // Ensure we don't return "hidden" or deleted products
       },
       include: {
         images: {

@@ -104,11 +104,8 @@ export type CartItemsServerRes = Omit<
   "addQty" | "removeQty" | "removeItem" | "disableQtyBtn"
 >;
 
-
-
-
-export interface deliveryInfo{
-  id:string;
+export interface deliveryInfo {
+  id: string;
   fullName: string;
   phone: string;
   addressLine1: string;
@@ -123,6 +120,19 @@ export interface getCategoryProps {
   id: string;
   name: string;
   parentId?: string | null;
-  image?:string | null;
-  slug:string
+  image?: string | null;
+  slug: string;
+}
+
+export interface categoryProduct {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface filteredAdminProducts {
+  product: ProductWithRelations[];
+  currentPage: number;
+  totalPages: number;
+  totalProducts: number;
 }

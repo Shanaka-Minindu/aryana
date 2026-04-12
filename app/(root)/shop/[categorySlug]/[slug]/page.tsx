@@ -15,7 +15,7 @@ const ProductPage = async ({ params }: { params: Promise<Params> }) => {
   const session = await auth();
 
   const productData = await getProduct(slug.slug);
-
+console.log(productData.data?.isActive)
   if (productData.data?.variants === undefined) return;
 
   return (
