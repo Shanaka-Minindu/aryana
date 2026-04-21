@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils"; // Assuming you have shadcn's cn utility
 
 interface StepsIndicatorProps {
   step: number; // The current active step (1, 2, or 3)
+  totalSteps:number
 }
 
-const StepsIndicator = ({ step }: StepsIndicatorProps) => {
-  const totalSteps = 3;
+const StepsIndicator = ({ step,totalSteps=1 }: StepsIndicatorProps) => {
+
 
   return (
     <div className="flex items-center justify-center w-full max-w-sm mx-auto">

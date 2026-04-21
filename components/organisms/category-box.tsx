@@ -20,9 +20,9 @@ const CategoryBox = ({ categoryBox }: CategoryBoxProps) => {
         - LG: Grid 4x2
       */}
       <div className="flex overflow-x-auto no-scrollbar lg:grid lg:grid-cols-4 lg:gap-0">
-        {categoryBox.map((category) => (
+        {categoryBox.map((category,index) => (
           <Link
-            key={category.slug}
+            key={index}
             href={`/shop/${category.slug}`}
             /* Requirement 2: Gap set to 0. 
                Requirement 4: MD screens show 2 items (50% width) 

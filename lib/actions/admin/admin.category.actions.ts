@@ -164,8 +164,13 @@ export async function deleteUploadThingImage(url: string) {
   // Extract key from URL: https://utfs.io/f/key
   const fileKey = url.split("/f/")[1];
   if (fileKey) {
-    await utapi.deleteFiles(fileKey);
-    return { success: true };
+   try {
+      await utapi.deleteFiles(fileKey);
+      return { success: true };
+    } catch (error) {
+      console.error("UT_DELETE_ERROR:", error);
+      return { success: false };
+    }
   }
   return { success: false };
 }

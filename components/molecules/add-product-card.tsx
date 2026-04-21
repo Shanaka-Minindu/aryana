@@ -33,7 +33,7 @@ const AddProductCard = ({ categoryData }: props) => {
 
         {/* Progress Indicator integration */}
         <div className="w-full py-4">
-          <StepsIndicator step={currentStep} />
+          <StepsIndicator totalSteps={3} step={currentStep} />
         </div>
       </div>
       {currentStep === 1 ? (

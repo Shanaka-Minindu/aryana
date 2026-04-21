@@ -136,3 +136,38 @@ export interface filteredAdminProducts {
   totalPages: number;
   totalProducts: number;
 }
+
+
+export interface carouselData {
+  id:string;
+  img: string;
+  name: string;
+  isActive: boolean;
+}
+
+
+export interface getCategoriesProps {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface positionDataProps {
+  availablePosition: number[];
+}
+
+export interface getProductCategoryRes {
+  image: string;
+  name: string;
+  price: string;
+  id: string;
+}
+
+
+
+export   interface getDisplayItemsRes {
+  id: string;
+  title: string;
+  position: string;
+  isActive:boolean
+}

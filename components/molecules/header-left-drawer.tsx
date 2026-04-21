@@ -34,7 +34,8 @@ const HeaderLeftDrawer = ({ session }: { session?: Session }) => {
     { id: "3", name: "Add Category", slug: "add_category" },
     { id: "4", name: "Add Product", slug: "add_product" },
     { id: "5", name: "Customize Carousel", slug: "customize_carousel" },
-    { id: "6", name: "Shipping", slug: "shipping" },
+    { id: "6", name: "Add Items", slug: "add_items" },
+    { id: "7", name: "Shipping", slug: "shipping" },
   ];
 
   if (role === "ADMIN") {

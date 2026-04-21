@@ -190,3 +190,60 @@ export const addVariantSchema = z.object({
       message: "Stock cannot be a negative value.",
     }),
 });
+
+
+export const carouselSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required.")
+    .max(50, "Name is too long."),
+  position: z
+    .string()
+    .min(1, "Position must be 1, 2, or 3.")
+    .refine((val)=> parseInt(val)<4,"Maximum of 3 carousels allowed.")
+  
+});
+
+const positions = ["LEFT", "RIGHT", "CENTER"] as const;
+
+export const addCarouselItemSchema = z.object({
+  heading: z
+    .string()
+    .min(1, "Heading is required."),
+
+  subHeading: z
+    .string()
+    .min(1, "Sub-heading is required."),
+
+  buttonText: z
+    .string()
+    .min(1, "Button text is required."),
+
+  linkUrl: z
+    .string()
+    .min(1, "Link URL is required.")
+    ,
+
+  imageUrl: z
+    .string()
+    .min(1, "Image URL is required.")
+    .url("Please enter a valid image URL."),
+
+    textPosition: z.enum(positions, {
+      message: "Position must be LEFT, RIGHT, or CENTER.",
+    }),
+  position: z
+    .string()
+    .min(1, "Position is required.")
+    .regex(/^[1-8]$/, "Position must be a number between 1 and 8."),
+});
+
+
+export const upsertDisplayItemSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  position: z
+    .string()
+    .min(1, "Position must be at least 1.")
+    .max(8, "Position cannot exceed 8."),
+  categoryId: z.string().uuid("Invalid category selected."),
+});
