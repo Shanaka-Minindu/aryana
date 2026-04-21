@@ -8,38 +8,41 @@ import { revalidatePath } from "next/cache";
 
 
 
-  export async function getCategories(): Promise<
-    ServerActionResponse<getCategoriesProps[]>
-  > {
-    try {
-      // 1. Fetch all categories from the database
-      // We select only the specific fields required by the interface
-      const categories = await prisma.category.findMany({
-        select: {
-          id: true,
-          name: true,
-          slug: true,
+export async function getCategories(): Promise<
+  ServerActionResponse<getCategoriesProps[]>
+> {
+  try {
+    // 1. Fetch categories that do NOT have an associated DisplayItem
+    const categories = await prisma.category.findMany({
+      where: {
+        displayItems: {
+          none: {}, // Ensures the category is not linked to any DisplayItem
         },
-        orderBy: {
-          name: "asc", // Alphabetical sorting is usually best for category lists
-        },
-      });
-  
-      // 2. Return the success response
-      return {
-        success: true,
-        message: "Categories retrieved successfully.",
-        data: categories,
-      };
-    } catch (error) {
-      console.error("GET_CATEGORIES_ERROR:", error);
-      return {
-        success: false,
-        message: "An error occurred while fetching categories.",
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return {
+      success: true,
+      message: "Available categories retrieved successfully.",
+      data: categories,
+    };
+  } catch (error) {
+    console.error("GET_AVAILABLE_CATEGORIES_ERROR:", error);
+    return {
+      success: false,
+      message: "An error occurred while fetching categories.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
+}
 
 
   
@@ -216,55 +219,81 @@ import { revalidatePath } from "next/cache";
 
 
   
-  export async function getProductCategory(
-    categoryId: string
-  ): Promise<ServerActionResponse<getProductCategoryRes[]>> {
-    try {
-      // 1. Fetch products related to the categoryId
-      // We only fetch active products and include their images
-      const products = await prisma.product.findMany({
-        where: {
-          categoryId: categoryId,
-         
-        },
-        include: {
-          images: {
-            orderBy: {
-              isPrimary: "desc", // Ensures primary image is first in the array
-            },
-            take: 1, // We only need the top image for this specific response
+export async function getProductCategory(
+  categoryId: string
+): Promise<ServerActionResponse<getProductCategoryRes[]>> {
+  try {
+    // 1. Fetch all descendant category IDs (Recursive)
+    // We fetch the category and all its children/grandchildren to gather all IDs
+    const categoryWithChildren = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: {
+        children: {
+          include: {
+            children: true, // Go deeper if your tree is more than 2 levels
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-  
-      // 2. Map the data to the getProductCategoryRes interface
-      const mappedProducts: getProductCategoryRes[] = products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        // Convert Int price to String as requested
-        price: product.price.toString(),
-        // Handle the case where a product might not have any images yet
-        image: product.images[0]?.url || "",
-      }));
-  
-      return {
-        success: true,
-        message: `Successfully retrieved ${mappedProducts.length} products.`,
-        data: mappedProducts,
-      };
-    } catch (error) {
-      console.error("GET_PRODUCT_CATEGORY_ERROR:", error);
-      return {
-        success: false,
-        message: "An error occurred while fetching category products.",
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
-  }
+      },
+    });
 
+    if (!categoryWithChildren) {
+      return { success: false, message: "Category not found." };
+    }
+
+    // 2. Flatten the ID tree into a single array
+    const allCategoryIds: string[] = [categoryWithChildren.id];
+    
+    const extractIds = (cat: any) => {
+      cat.children?.forEach((child: any) => {
+        allCategoryIds.push(child.id);
+        if (child.children) extractIds(child); // Recursive call for deep nesting
+      });
+    };
+    extractIds(categoryWithChildren);
+
+    // 3. Fetch products where categoryId is IN our flattened array
+    const products = await prisma.product.findMany({
+      where: {
+        categoryId: {
+          in: allCategoryIds,
+        },
+        isActive: true,
+      },
+      include: {
+        images: {
+          orderBy: {
+            isPrimary: "desc",
+          },
+          take: 1,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // 4. Map the data
+    const mappedProducts: getProductCategoryRes[] = products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: product.price.toString(),
+      image: product.images[0]?.url || "",
+    }));
+
+    return {
+      success: true,
+      message: `Retrieved products for category and its subcategories.`,
+      data: mappedProducts,
+    };
+  } catch (error) {
+    console.error("GET_PRODUCT_CATEGORY_ERROR:", error);
+    return {
+      success: false,
+      message: "An error occurred while fetching products.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
   interface productPosition {
     productId: string;
     position: string;
