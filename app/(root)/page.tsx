@@ -15,36 +15,39 @@ const HomePage = async () => {
   const carouselItems2 =
     carousel2.success && carousel.data ? carousel.data : [];
 
-  const displayIt1 = await getDisplayItems(1);
+  const [
+    displayIt1,
+    displayIt2,
+    displayIt3,
+    displayIt4,
+    displayIt5,
+    displayIt6,
+  ] = await Promise.all([
+    getDisplayItems(1),
+    getDisplayItems(2),
+    getDisplayItems(3),
+    getDisplayItems(4),
+    getDisplayItems(5),
+    getDisplayItems(6),
+  ]);
+
   const displayItem =
     displayIt1.success && displayIt1.data ? displayIt1.data : null;
 
-  const displayIt2 = await getDisplayItems(2);
   const displayItem2 =
     displayIt2.success && displayIt2.data ? displayIt2.data : null;
-    
 
-  const displayIt3 = await getDisplayItems(3);
   const displayItem3 =
     displayIt3.success && displayIt3.data ? displayIt3.data : null;
 
-
-    const displayIt4 = await getDisplayItems(4);
   const displayItem4 =
-  displayIt4.success && displayIt4.data ? displayIt4.data : null;
+    displayIt4.success && displayIt4.data ? displayIt4.data : null;
 
-
-
-    const displayIt5 = await getDisplayItems(5);
   const displayItem5 =
-  displayIt5.success && displayIt5.data ? displayIt5.data : null;
+    displayIt5.success && displayIt5.data ? displayIt5.data : null;
 
-
-    const displayIt6 = await getDisplayItems(6);
   const displayItem6 =
-  displayIt6.success && displayIt6.data ? displayIt6.data : null;
-
-
+    displayIt6.success && displayIt6.data ? displayIt6.data : null;
 
   const categoryBox = await getCategoryHome();
   const categoryBoxData =

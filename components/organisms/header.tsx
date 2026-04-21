@@ -16,6 +16,7 @@ import HeaderLeftDrawer from "../molecules/header-left-drawer";
 import ShoppingCart from "./shopping-cart";
 import { Session } from "next-auth";
 import { useCartStore } from "@/store/use-cart-store";
+import Image from "next/image";
 
 const Header = ({ session }: { session?: Session }) => {
   const [navItems, setNavItems] = useState<HeaderItem[]>([]);
@@ -36,13 +37,13 @@ const Header = ({ session }: { session?: Session }) => {
     <header className="sticky top-0 z-50 w-full border-b bg-white">
       <div className="container mx-auto flex h-20 items-center justify-between px-0 lg:px-8">
         {/* LEFT SECTION: Drawer Trigger & Logo */}
-        <div className="flex items-center gap-4 lg:w-1/6">
-          <HeaderLeftDrawer session={session}/>
+        <div className="flex it gap-4 lg:w-1/6">
+          <HeaderLeftDrawer session={session} />
           <Link
             href="/"
             className="text-2xl font-bold tracking-tighter text-slate-900 lg:text-3xl"
           >
-            ARYANA
+            <Image src="/logo.png" width={120} height={50} alt="logo" />
           </Link>
         </div>
 
@@ -131,7 +132,6 @@ const Header = ({ session }: { session?: Session }) => {
           <button
             onClick={() => {
               onOpen();
-              
             }}
             className="group relative p-2 text-slate-600 hover:text-slate-900"
           >
