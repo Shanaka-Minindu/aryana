@@ -28,7 +28,7 @@ const AddItemsClient = ({categories, position,displayItems}:AddItemsClientProps)
       {/* Header Section */}
       <div className="flex flex-col gap-6 mb-8">
         <h2 className="text-xl font-bold text-zinc-900 border-b border-zinc-50 pb-4">
-          Add Carousel
+          Add Items
         </h2>
 
         {/* Progress Indicator integration */}
