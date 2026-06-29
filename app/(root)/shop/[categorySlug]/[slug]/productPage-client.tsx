@@ -386,7 +386,7 @@ const ProductPageClient = ({ productData, session }: props) => {
 
     {/* Facebook Link 2 */}
     <a 
-      href="https://www.facebook.com/profile.php?id=61575153235407" 
+      href="https://www.facebook.com/profile.php?id=100057320325698" 
       target="_blank" 
       rel="noopener noreferrer"
       className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 bg-zinc-50/50 hover:bg-blue-50/40 hover:border-blue-200 transition-all duration-200 group"
@@ -401,7 +401,7 @@ const ProductPageClient = ({ productData, session }: props) => {
       </div>
       <div className="flex flex-col min-w-0">
         <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-blue-500 transition-colors">Facebook</span>
-        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">aryanacollection.lk</span>
+        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">Aryana.lk</span>
       </div>
     </a>
 
@@ -428,7 +428,7 @@ const ProductPageClient = ({ productData, session }: props) => {
 
     {/* Instagram Link 2 */}
     <a 
-      href="https://www.instagram.com/aryana_collection.lk?igsh=MWQweGZneHJ5dTR5Mg%3D%3D&utm_source=qr" 
+      href="https://www.instagram.com/aryanaa.lk?igsh=MWQweGZneHJ5dTR5Mg%3D%3D&utm_source=qr" 
       target="_blank" 
       rel="noopener noreferrer"
       className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 bg-zinc-50/50 hover:bg-pink-50/40 hover:border-pink-200 transition-all duration-200 group"
@@ -443,7 +443,7 @@ const ProductPageClient = ({ productData, session }: props) => {
       </div>
       <div className="flex flex-col min-w-0">
         <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-pink-500 transition-colors">Instagram</span>
-        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">aryana_collection.lk</span>
+        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">aryanaa.lk</span>
       </div>
     </a>
   </div>
