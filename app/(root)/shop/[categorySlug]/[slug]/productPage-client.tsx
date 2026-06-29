@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,7 @@ const ProductPageClient = ({ productData, session }: props) => {
   const images = productData.images;
   const isSingleImage = images.length === 1;
   const displayImages = showAllImages ? images : images.slice(0, 4);
-  
+
   // Logical check for sold out state
   const isSoldOut = productData.isActive === false;
 
@@ -77,7 +76,7 @@ const ProductPageClient = ({ productData, session }: props) => {
       });
       return;
     }
-    
+
     const toastId = toast.loading("Adding items to your bag...");
     const variant = productData.variants.find(
       (v) =>
@@ -106,7 +105,9 @@ const ProductPageClient = ({ productData, session }: props) => {
         triggerRefresh();
         toast.success("Woo hoo it's in your bag now", { id: toastId });
       } else {
-        toast.error("something went wrong!!, Please try again", { id: toastId });
+        toast.error("something went wrong!!, Please try again", {
+          id: toastId,
+        });
       }
     } else {
       const localCart = localStorage.getItem("guest-cart");
@@ -194,7 +195,9 @@ const ProductPageClient = ({ productData, session }: props) => {
                     <>
                       <ChevronRight size={18} className="lg:hidden" />
                       <ChevronLeft size={18} className="hidden lg:block" />
-                      <span className="hidden lg:inline">View All {images.length} Images</span>
+                      <span className="hidden lg:inline">
+                        View All {images.length} Images
+                      </span>
                       <span className="lg:hidden">View More</span>
                     </>
                   )}
@@ -211,11 +214,14 @@ const ProductPageClient = ({ productData, session }: props) => {
           <h1 className="text-3xl font-medium tracking-tight text-zinc-900 leading-tight">
             {productData.name}
           </h1>
-          
+
           {/* Sold Out Badge */}
           {isSoldOut && (
             <div className="">
-              <Badge variant="destructive" className="rounded-full uppercase text-[10px] tracking-widest px-4 py-3">
+              <Badge
+                variant="destructive"
+                className="rounded-full uppercase text-[10px] tracking-widest px-4 py-3"
+              >
                 Sold Out
               </Badge>
             </div>
@@ -259,7 +265,7 @@ const ProductPageClient = ({ productData, session }: props) => {
                     selectedColor === color
                       ? "border-black scale-110"
                       : "border-gray-300",
-                    isSoldOut && "opacity-30 cursor-not-allowed grayscale"
+                    isSoldOut && "opacity-30 cursor-not-allowed grayscale",
                   )}
                   style={{ backgroundColor: color }}
                 />
@@ -316,33 +322,30 @@ const ProductPageClient = ({ productData, session }: props) => {
           >
             {isSoldOut ? "Out of Stock" : "Add to Cart"}
           </Button> */}
-          <a 
-  href="https://wa.me/94763474981" // Note: Removed the '+' as per official WhatsApp link guidelines
-  target="_blank" 
-  rel="noopener noreferrer" 
-  className="w-full block" // Ensures the link spans full width like the original button
->
-  <Button
-    disabled={isSoldOut}
-    className={cn(
-      "w-full py-7 rounded-full uppercase font-bold tracking-widest transition-all flex items-center justify-center gap-2",
-      isSoldOut 
-        ? "bg-zinc-200 text-zinc-400 cursor-not-allowed" 
-        : "bg-[#25D366] text-white hover:bg-[#20ba5a] shadow-md hover:shadow-lg"
-    )}
-  >
-    {/* WhatsApp SVG Icon */}
-    <svg 
-      className="w-6 h-6 fill-current" 
-      viewBox="0 0 24 24" 
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.267 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.66.986 3.288 1.447 5.35 1.448 5.4 0 9.792-4.393 9.795-9.795.002-2.618-1.013-5.079-2.86-6.929C17.028 2.026 14.57 1.01 11.96 1.01c-5.399 0-9.794 4.393-9.797 9.795-.001 2.032.547 3.63 1.545 5.23L2.708 21.3l5.148-1.353z" />
-    </svg>
-    
-    {isSoldOut ? "Out of Stock" : "Contact via WhatsApp"}
-  </Button>
-</a>
+          <a
+            href="https://wa.me/94763474981" // Note: Removed the '+' as per official WhatsApp link guidelines
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full block" // Ensures the link spans full width like the original button
+          >
+            <Button
+              className={cn(
+                "w-full py-7 rounded-full uppercase font-bold tracking-widest transition-all flex items-center justify-center gap-2",
+                "bg-[#25D366] text-white hover:bg-[#20ba5a] shadow-md hover:shadow-lg",
+              )}
+            >
+              {/* WhatsApp Image from the public folder */}
+              <Image
+                src="/whatsapp-svg.svg"
+                alt="WhatsApp"
+                width={24}
+                height={24}
+                className="w-6 h-6 object-contain brightness-0 invert"
+                priority
+              />
+              Contact via WhatsApp
+            </Button>
+          </a>
         </div>
 
         <div className="pt-8 border-t border-zinc-100">
@@ -353,6 +356,98 @@ const ProductPageClient = ({ productData, session }: props) => {
             {productData.description}
           </p>
         </div>
+
+<div className="pt-8 border-t border-zinc-100">
+  <h4 className="font-bold uppercase text-xs tracking-widest mb-4 text-zinc-800">
+    Social media handles
+  </h4>
+  
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    {/* Facebook Link 1 */}
+    <a 
+      href="https://www.facebook.com/Aryana.Couture.Atelier" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 bg-zinc-50/50 hover:bg-blue-50/40 hover:border-blue-200 transition-all duration-200 group"
+    >
+      <div className="relative w-6 h-6 shrink-0">
+        <Image 
+          src="/facebook-svg.svg" 
+          alt="Facebook" 
+          fill
+          className="object-contain"
+        />
+      </div>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-blue-500 transition-colors">Facebook</span>
+        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">Aryana</span>
+      </div>
+    </a>
+
+    {/* Facebook Link 2 */}
+    <a 
+      href="https://www.facebook.com/profile.php?id=61575153235407" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 bg-zinc-50/50 hover:bg-blue-50/40 hover:border-blue-200 transition-all duration-200 group"
+    >
+      <div className="relative w-6 h-6 shrink-0">
+        <Image 
+          src="/facebook-svg.svg" 
+          alt="Facebook" 
+          fill
+          className="object-contain"
+        />
+      </div>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-blue-500 transition-colors">Facebook</span>
+        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">aryanacollection.lk</span>
+      </div>
+    </a>
+
+    {/* Instagram Link 1 */}
+    <a 
+      href="https://www.instagram.com/aryana_couture_atelier?igsh=MTRxcTI0eWt2MjFrNA%3D%3D&utm_source=qr" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 bg-zinc-50/50 hover:bg-pink-50/40 hover:border-pink-200 transition-all duration-200 group"
+    >
+      <div className="relative w-6 h-6 shrink-0">
+        <Image 
+          src="/instagram.svg" 
+          alt="Instagram" 
+          fill
+          className="object-contain"
+        />
+      </div>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-pink-500 transition-colors">Instagram</span>
+        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">aryana_couture_atelier</span>
+      </div>
+    </a>
+
+    {/* Instagram Link 2 */}
+    <a 
+      href="https://www.instagram.com/aryana_collection.lk?igsh=MWQweGZneHJ5dTR5Mg%3D%3D&utm_source=qr" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 bg-zinc-50/50 hover:bg-pink-50/40 hover:border-pink-200 transition-all duration-200 group"
+    >
+      <div className="relative w-6 h-6 shrink-0">
+        <Image 
+          src="/instagram.svg" 
+          alt="Instagram" 
+          fill
+          className="object-contain"
+        />
+      </div>
+      <div className="flex flex-col min-w-0">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 group-hover:text-pink-500 transition-colors">Instagram</span>
+        <span className="text-sm font-medium text-zinc-700 group-hover:text-zinc-900 truncate">aryana_collection.lk</span>
+      </div>
+    </a>
+  </div>
+</div>
       </div>
     </div>
   );
