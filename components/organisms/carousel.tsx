@@ -43,15 +43,21 @@ const Carousel = ({ items }: CarouselItemsProp) => {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
-  }, [emblaApi]);
+  const scrollTo = useCallback(
+    (index: number) => {
+      if (emblaApi) emblaApi.scrollTo(index);
+    },
+    [emblaApi],
+  );
 
   return (
     <div className="relative overflow-hidden bg-zinc-100" ref={emblaRef}>
       <div className="flex">
         {items.map((item) => (
-          <div key={item.id} className="relative min-w-full h-[500px] md:h-[600px] flex-[0_0_100%]">
+          <div
+            key={item.id}
+            className="relative min-w-full h-[500px] md:h-[600px] flex-[0_0_100%]"
+          >
             <Image
               src={item.imgUrl}
               alt={item.heading}
@@ -59,10 +65,10 @@ const Carousel = ({ items }: CarouselItemsProp) => {
               priority
               className="object-cover"
             />
-            
+
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/10 text-center px-4">
               <div className="max-w-4xl space-y-6">
-                <h1 className="text-5xl md:text-8xl font-bold tracking-tighter text-white drop-shadow-md uppercase">
+                <h1 className="text-75xl md:text-7xl font-bold tracking-tighter text-white drop-shadow-md uppercase">
                   {item.heading}
                 </h1>
                 <p className="text-lg md:text-xl text-white font-medium drop-shadow-sm">
@@ -70,8 +76,8 @@ const Carousel = ({ items }: CarouselItemsProp) => {
                 </p>
                 <div className="pt-4">
                   <Link href={item.linkUrl}>
-                    <Button 
-                      size="lg" 
+                    <Button
+                      size="lg"
                       className="rounded-full bg-black hover:bg-zinc-800 text-white px-10 py-7 text-lg font-bold uppercase transition-transform hover:scale-105"
                     >
                       {item.buttonText}
@@ -101,14 +107,14 @@ const Carousel = ({ items }: CarouselItemsProp) => {
       {/* FIXED: Progress Indicators */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
         {items.map((_, index) => (
-          <button 
-            key={index} 
+          <button
+            key={index}
             onClick={() => scrollTo(index)}
             className={cn(
               "h-1.5 w-12 rounded-full transition-all duration-300",
-              selectedIndex === index 
+              selectedIndex === index
                 ? "bg-white" // Active state
-                : "bg-white/30 hover:bg-white/50" // Inactive state
+                : "bg-white/30 hover:bg-white/50", // Inactive state
             )}
           />
         ))}

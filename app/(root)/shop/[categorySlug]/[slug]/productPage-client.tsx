@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -303,7 +304,7 @@ const ProductPageClient = ({ productData, session }: props) => {
         </div>
 
         <div className="space-y-4 pt-4">
-          <Button
+          {/* <Button
             onClick={handleAddToCart}
             disabled={isSoldOut} // Deactivate button
             className={cn(
@@ -314,7 +315,34 @@ const ProductPageClient = ({ productData, session }: props) => {
             )}
           >
             {isSoldOut ? "Out of Stock" : "Add to Cart"}
-          </Button>
+          </Button> */}
+          <a 
+  href="https://wa.me/94763474981" // Note: Removed the '+' as per official WhatsApp link guidelines
+  target="_blank" 
+  rel="noopener noreferrer" 
+  className="w-full block" // Ensures the link spans full width like the original button
+>
+  <Button
+    disabled={isSoldOut}
+    className={cn(
+      "w-full py-7 rounded-full uppercase font-bold tracking-widest transition-all flex items-center justify-center gap-2",
+      isSoldOut 
+        ? "bg-zinc-200 text-zinc-400 cursor-not-allowed" 
+        : "bg-[#25D366] text-white hover:bg-[#20ba5a] shadow-md hover:shadow-lg"
+    )}
+  >
+    {/* WhatsApp SVG Icon */}
+    <svg 
+      className="w-6 h-6 fill-current" 
+      viewBox="0 0 24 24" 
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.267 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.713-1.457L0 24zm6.59-4.846c1.66.986 3.288 1.447 5.35 1.448 5.4 0 9.792-4.393 9.795-9.795.002-2.618-1.013-5.079-2.86-6.929C17.028 2.026 14.57 1.01 11.96 1.01c-5.399 0-9.794 4.393-9.797 9.795-.001 2.032.547 3.63 1.545 5.23L2.708 21.3l5.148-1.353z" />
+    </svg>
+    
+    {isSoldOut ? "Out of Stock" : "Contact via WhatsApp"}
+  </Button>
+</a>
         </div>
 
         <div className="pt-8 border-t border-zinc-100">
